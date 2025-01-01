@@ -3,6 +3,7 @@ import yaml
 import os
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 from pathlib import Path
 
 # Load configuration files
@@ -89,6 +90,99 @@ def calculate_impacts(intervention, population_type, base_params):
         'QALY Impact': qaly_impact
     }
 
+def create_impact_breakdown(impacts, intervention, population_type, base_params):
+    """Create a detailed breakdown of impact sources"""
+    effects = intervention['default_effects']
+    breakdown = []
+    
+    if 'healthcare' in effects:
+        hospital_impact = (
+            base_params['population'][population_type] * 
+            base_params['economics']['medicare_per_capita'] * 
+            base_params['health_baselines']['medicare_enrollment_rate'] *
+            effects['healthcare']['hospital_visit_reduction'] / 100
+        )
+        breakdown.append({
+            'Category': 'Hospital Visits',
+            'Medicare Savings': hospital_impact
+        })
+    
+    if 'cognitive' in effects and 'alzheimers_reduction' in effects['cognitive'] and population_type == 'over_60':
+        alz_impact = (
+            base_params['economics']['alzheimers_annual_cost'] * 
+            effects['cognitive']['alzheimers_reduction'] / 100 * 
+            intervention['impact_modifiers'].get('alzheimers_to_medicare', 0)
+        )
+        breakdown.append({
+            'Category': "Alzheimer's",
+            'Medicare Savings': alz_impact
+        })
+    
+    if 'kidney' in effects and 'ckd_progression_reduction' in effects['kidney']:
+        kidney_impact = (
+            base_params['economics']['ckd_annual_cost'] * 
+            effects['kidney']['ckd_progression_reduction'] / 100 * 
+            intervention['impact_modifiers'].get('kidney_to_medicare', 0)
+        )
+        breakdown.append({
+            'Category': 'Kidney Disease',
+            'Medicare Savings': kidney_impact
+        })
+    
+    return pd.DataFrame(breakdown)
+
+def plot_medicare_breakdown(breakdown_df):
+    """Create a bar chart showing Medicare savings by category"""
+    fig = px.bar(
+        breakdown_df,
+        x='Category',
+        y='Medicare Savings',
+        title='Medicare Savings Breakdown',
+        labels={'Medicare Savings': 'Annual Savings ($)'},
+        color='Category'
+    )
+    fig.update_layout(
+        showlegend=False,
+        yaxis_tickformat='$,.0f'
+    )
+    return fig
+
+def plot_population_comparison(intervention, base_params):
+    """Create a comparison of impacts across population segments"""
+    populations = ['total_us', 'over_60', 'adult']
+    results = []
+    
+    for pop in populations:
+        impact = calculate_impacts(intervention, pop, base_params)
+        results.append({
+            'Population': pop.replace('_', ' ').title(),
+            'Medicare Savings': impact['Medicare Savings'],
+            'GDP Impact': impact['GDP Impact'],
+            'QALY Impact': impact['QALY Impact']
+        })
+    
+    df = pd.DataFrame(results)
+    
+    fig = go.Figure()
+    metrics = ['Medicare Savings', 'GDP Impact']
+    
+    for metric in metrics:
+        fig.add_trace(go.Bar(
+            name=metric,
+            x=df['Population'],
+            y=df[metric],
+            text=df[metric].apply(lambda x: f'${x:,.0f}'),
+            textposition='auto',
+        ))
+    
+    fig.update_layout(
+        title='Impact Comparison Across Populations',
+        barmode='group',
+        yaxis_tickformat='$,.0f'
+    )
+    
+    return fig
+
 # Streamlit UI
 st.title('Health and Economic Impact Simulator')
 
@@ -149,6 +243,17 @@ with col2:
     st.metric("GDP Impact", f"${impacts['GDP Impact']:,.0f}")
 with col3:
     st.metric("QALY Impact", f"{impacts['QALY Impact']:,.0f}")
+
+# Add visualizations
+st.markdown("### Impact Analysis")
+
+# Medicare savings breakdown
+breakdown_df = create_impact_breakdown(impacts, intervention, population_type, base_params)
+if not breakdown_df.empty:
+    st.plotly_chart(plot_medicare_breakdown(breakdown_df), use_container_width=True)
+
+# Population comparison
+st.plotly_chart(plot_population_comparison(intervention, base_params), use_container_width=True)
 
 # Generate report
 if st.button('Generate Report'):
