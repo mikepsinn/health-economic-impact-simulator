@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import numpy as np
 from pathlib import Path
 
 # Load configuration files
@@ -183,6 +184,123 @@ def plot_population_comparison(intervention, base_params):
     
     return fig
 
+def calculate_time_series(intervention, population_type, base_params, years=10):
+    """Calculate impact over time"""
+    annual_impact = calculate_impacts(intervention, population_type, base_params)
+    
+    # Initialize time series data
+    years_range = range(years)
+    cumulative_data = []
+    
+    # Calculate compound effects
+    for year in years_range:
+        # Assume some compound growth in benefits
+        compound_factor = 1 + (year * 0.02)  # 2% compound effect each year
+        
+        medicare_savings = annual_impact['Medicare Savings'] * compound_factor
+        gdp_impact = annual_impact['GDP Impact'] * compound_factor
+        qaly_impact = annual_impact['QALY Impact'] * compound_factor
+        
+        cumulative_medicare = medicare_savings * (year + 1)
+        cumulative_gdp = gdp_impact * (year + 1)
+        cumulative_qaly = qaly_impact * (year + 1)
+        
+        cumulative_data.append({
+            'Year': year + 1,
+            'Annual Medicare Savings': medicare_savings,
+            'Cumulative Medicare Savings': cumulative_medicare,
+            'Annual GDP Impact': gdp_impact,
+            'Cumulative GDP Impact': cumulative_gdp,
+            'Annual QALY Impact': qaly_impact,
+            'Cumulative QALY Impact': cumulative_qaly
+        })
+    
+    return pd.DataFrame(cumulative_data)
+
+def plot_time_series(time_series_df):
+    """Create time series visualization"""
+    # Create figure with secondary y-axis
+    fig = go.Figure()
+    
+    # Add annual Medicare savings
+    fig.add_trace(
+        go.Scatter(
+            x=time_series_df['Year'],
+            y=time_series_df['Annual Medicare Savings'],
+            name='Annual Medicare Savings',
+            line=dict(color='blue')
+        )
+    )
+    
+    # Add cumulative Medicare savings
+    fig.add_trace(
+        go.Scatter(
+            x=time_series_df['Year'],
+            y=time_series_df['Cumulative Medicare Savings'],
+            name='Cumulative Medicare Savings',
+            line=dict(color='red', dash='dash')
+        )
+    )
+    
+    # Update layout
+    fig.update_layout(
+        title='Projected Medicare Savings Over Time',
+        xaxis_title='Year',
+        yaxis_title='Savings ($)',
+        yaxis_tickformat='$,.0f',
+        hovermode='x unified',
+        showlegend=True
+    )
+    
+    return fig
+
+def plot_metrics_over_time(time_series_df):
+    """Create a multi-metric time series comparison"""
+    fig = go.Figure()
+    
+    metrics = [
+        ('GDP Impact', 'Annual GDP Impact', 'Cumulative GDP Impact'),
+        ('Medicare Savings', 'Annual Medicare Savings', 'Cumulative Medicare Savings'),
+        ('QALY Impact', 'Annual QALY Impact', 'Cumulative QALY Impact')
+    ]
+    
+    for metric_name, annual_col, cumulative_col in metrics:
+        # Create subplot for each metric
+        fig.add_trace(
+            go.Scatter(
+                x=time_series_df['Year'],
+                y=time_series_df[annual_col],
+                name=f'Annual {metric_name}',
+                line=dict(dash='solid')
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=time_series_df['Year'],
+                y=time_series_df[cumulative_col],
+                name=f'Cumulative {metric_name}',
+                line=dict(dash='dash')
+            )
+        )
+    
+    fig.update_layout(
+        title='Projected Impact Metrics Over Time',
+        xaxis_title='Year',
+        yaxis_title='Value',
+        yaxis_tickformat='$,.0f',
+        hovermode='x unified',
+        height=600,
+        showlegend=True,
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        )
+    )
+    
+    return fig
+
 # Streamlit UI
 st.title('Health and Economic Impact Simulator')
 
@@ -254,6 +372,30 @@ if not breakdown_df.empty:
 
 # Population comparison
 st.plotly_chart(plot_population_comparison(intervention, base_params), use_container_width=True)
+
+# Add time series projections
+st.markdown("### Long-term Impact Projections")
+
+# Add year range selector
+projection_years = st.slider("Projection Timeline (Years)", min_value=5, max_value=20, value=10)
+
+# Calculate and display time series data
+time_series_df = calculate_time_series(intervention, population_type, base_params, projection_years)
+
+# Display Medicare savings over time
+st.plotly_chart(plot_time_series(time_series_df), use_container_width=True)
+
+# Display all metrics over time
+st.plotly_chart(plot_metrics_over_time(time_series_df), use_container_width=True)
+
+# Add summary of long-term impact
+final_year = time_series_df.iloc[-1]
+st.markdown(f"""
+### Cumulative Impact After {projection_years} Years
+- Total Medicare Savings: ${final_year['Cumulative Medicare Savings']:,.0f}
+- Total GDP Impact: ${final_year['Cumulative GDP Impact']:,.0f}
+- Total QALYs Gained: {final_year['Cumulative QALY Impact']:,.0f}
+""")
 
 # Generate report
 if st.button('Generate Report'):
