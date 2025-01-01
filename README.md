@@ -25,6 +25,45 @@ The simulator:
    - View results and projections
    - Export data for study design and reporting
 
+## Developer Implementation Guide
+
+### Application Structure
+```
+/src
+  /config
+    - base_parameters.yml    # Default population parameters
+    - interventions/         # One YAML file per intervention
+      - follistatin.yml
+      - klotho.yml
+      - thymosin.yml
+  /components
+    - ParameterForm.tsx     # Input form for modifying parameters
+    - ResultsDisplay.tsx    # Display calculations and graphs
+    - Report.tsx           # Formatted report for agencies
+  /utils
+    - calculations.ts      # Implementation of formulas
+    - formatters.ts       # Data formatting for display
+```
+
+### Intervention YAML Structure
+```yaml
+name: "Follistatin"
+description: "Muscle growth and fat reduction therapeutic"
+default_effects:
+  muscle_mass_change: 2.0  # lbs
+  fat_mass_change: -2.0    # lbs
+  lifespan_increase: 2.5   # percentage
+  biomarkers:
+    egfr_change: 5.0
+    cystatin_c_change: -0.2
+```
+
+### Single Page Layout
+1. Intervention selector dropdown
+2. Parameter adjustment panel
+3. Real-time results display
+4. Report generation button
+
 ## Input Parameters
 
 ### Population Parameters
@@ -72,6 +111,22 @@ The simulator:
    ```
    Δ Hospital Visits = Population × (Baseline Rate × Health Impact Modifier)
    ```
+
+## Report Format
+
+The generated report will include:
+1. Executive Summary
+   - Intervention name and description
+   - Key findings in bullet points
+2. Economic Impact Section
+   - Medicare savings projections
+   - GDP impact estimates
+3. Health Impact Section
+   - Population health benefits
+   - Healthcare system effects
+4. Methodology Summary
+   - Key parameters used
+   - Calculation approach
 
 ## Key Features
 
