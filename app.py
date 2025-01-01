@@ -136,15 +136,28 @@ def plot_medicare_breakdown(breakdown_df):
     """Create a bar chart showing Medicare savings by category"""
     fig = px.bar(
         breakdown_df,
-        x='Category',
-        y='Medicare Savings',
+        x='Medicare Savings',
+        y='Category',
         title='Medicare Savings Breakdown',
-        labels={'Medicare Savings': 'Annual Savings ($)'},
-        color='Category'
+        labels={'Medicare Savings': 'Annual Savings'},
+        color='Category',
+        orientation='h'
     )
+    
+    # Format text labels
+    fig.update_traces(
+        text=[format_large_number(x) for x in breakdown_df['Medicare Savings']],
+        textposition='auto'
+    )
+    
     fig.update_layout(
         showlegend=False,
-        yaxis_tickformat='$,.0f'
+        xaxis_tickformat='$,.0f',
+        height=400,
+        margin=dict(l=20, r=20, t=50, b=50),
+        title_x=0.5,
+        title_y=0.98,
+        yaxis_title=None
     )
     return fig
 
@@ -170,32 +183,43 @@ def plot_population_comparison(intervention, base_params):
     for metric in metrics:
         fig.add_trace(go.Bar(
             name=metric,
-            x=df['Population'],
-            y=df[metric],
-            text=df[metric].apply(lambda x: f'${x:,.0f}'),
+            y=df['Population'],
+            x=df[metric],
+            text=[format_large_number(x) for x in df[metric]],
             textposition='auto',
+            orientation='h'
         ))
     
     fig.update_layout(
         title='Impact Comparison Across Populations',
         barmode='group',
-        yaxis_tickformat='$,.0f'
+        xaxis_tickformat='$,.0f',
+        height=400,
+        margin=dict(l=20, r=20, t=50, b=50),
+        title_x=0.5,
+        title_y=0.98,
+        yaxis_title=None,
+        xaxis_title=None,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.15,
+            xanchor="center",
+            x=0.5
+        )
     )
     
     return fig
 
-def calculate_time_series(intervention, population_type, base_params, years=10):
-    """Calculate impact over time"""
+def calculate_time_series(intervention, population_type, base_params, years=10, growth_rate=0.02):
+    """Calculate impact over time with configurable growth rate"""
     annual_impact = calculate_impacts(intervention, population_type, base_params)
     
-    # Initialize time series data
     years_range = range(years)
     cumulative_data = []
     
-    # Calculate compound effects
     for year in years_range:
-        # Assume some compound growth in benefits
-        compound_factor = 1 + (year * 0.02)  # 2% compound effect each year
+        compound_factor = 1 + (year * growth_rate)
         
         medicare_savings = annual_impact['Medicare Savings'] * compound_factor
         gdp_impact = annual_impact['GDP Impact'] * compound_factor
@@ -219,7 +243,6 @@ def calculate_time_series(intervention, population_type, base_params, years=10):
 
 def plot_time_series(time_series_df):
     """Create time series visualization"""
-    # Create figure with secondary y-axis
     fig = go.Figure()
     
     # Add annual Medicare savings
@@ -227,7 +250,7 @@ def plot_time_series(time_series_df):
         go.Scatter(
             x=time_series_df['Year'],
             y=time_series_df['Annual Medicare Savings'],
-            name='Annual Medicare Savings',
+            name='Annual',
             line=dict(color='blue')
         )
     )
@@ -237,19 +260,29 @@ def plot_time_series(time_series_df):
         go.Scatter(
             x=time_series_df['Year'],
             y=time_series_df['Cumulative Medicare Savings'],
-            name='Cumulative Medicare Savings',
+            name='Cumulative',
             line=dict(color='red', dash='dash')
         )
     )
     
     # Update layout
     fig.update_layout(
-        title='Projected Medicare Savings Over Time',
+        title='Medicare Savings Over Time',
         xaxis_title='Year',
         yaxis_title='Savings ($)',
         yaxis_tickformat='$,.0f',
         hovermode='x unified',
-        showlegend=True
+        height=450,
+        margin=dict(l=20, r=20, t=50, b=50),
+        title_x=0.5,
+        title_y=0.98,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.15,
+            xanchor="center",
+            x=0.5
+        )
     )
     
     return fig
@@ -265,13 +298,13 @@ def plot_metrics_over_time(time_series_df):
     ]
     
     for metric_name, annual_col, cumulative_col in metrics:
-        # Create subplot for each metric
         fig.add_trace(
             go.Scatter(
                 x=time_series_df['Year'],
                 y=time_series_df[annual_col],
                 name=f'Annual {metric_name}',
-                line=dict(dash='solid')
+                line=dict(dash='solid'),
+                visible='legendonly' if metric_name != 'Medicare Savings' else True
             )
         )
         fig.add_trace(
@@ -279,30 +312,60 @@ def plot_metrics_over_time(time_series_df):
                 x=time_series_df['Year'],
                 y=time_series_df[cumulative_col],
                 name=f'Cumulative {metric_name}',
-                line=dict(dash='dash')
+                line=dict(dash='dash'),
+                visible='legendonly' if metric_name != 'Medicare Savings' else True
             )
         )
     
     fig.update_layout(
-        title='Projected Impact Metrics Over Time',
+        title='Impact Metrics Over Time',
         xaxis_title='Year',
         yaxis_title='Value',
         yaxis_tickformat='$,.0f',
         hovermode='x unified',
-        height=600,
+        height=500,
+        margin=dict(l=20, r=20, t=50, b=70),
+        title_x=0.5,
+        title_y=0.98,
         showlegend=True,
         legend=dict(
+            orientation="h",
             yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
+            y=-0.15,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=10)
         )
     )
     
     return fig
 
+def format_large_number(num):
+    """Format large numbers into B/M format"""
+    abs_num = abs(num)
+    if abs_num >= 1e9:
+        return f"${abs_num/1e9:.1f}B"
+    elif abs_num >= 1e6:
+        return f"${abs_num/1e6:.1f}M"
+    else:
+        return f"${abs_num:,.0f}"
+
 # Streamlit UI
 st.title('Health and Economic Impact Simulator')
+
+# Add custom CSS for section spacing
+st.markdown("""
+<style>
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+h2, h3 {
+    margin-top: 2rem !important;
+    margin-bottom: 1rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Sidebar controls
 st.sidebar.header('Parameters')
@@ -324,8 +387,12 @@ intervention = intervention_data[selected_intervention]
 st.markdown(f"## {intervention['name']}")
 st.markdown(intervention['description'])
 
+# Calculate impacts first
+impacts = calculate_impacts(intervention, population_type, base_params)
+
 # Display key parameters
 st.markdown("### Key Parameters")
+st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 with col1:
@@ -350,43 +417,51 @@ with col2:
         st.write(f"CKD Progression Reduction: {effects['kidney']['ckd_progression_reduction']}%")
 
 # Calculate and display impacts
-impacts = calculate_impacts(intervention, population_type, base_params)
-
+st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
 st.markdown("### Impact Summary")
+st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Medicare Savings", f"${impacts['Medicare Savings']:,.0f}")
+    st.metric("Medicare Savings", format_large_number(impacts['Medicare Savings']))
 with col2:
-    st.metric("GDP Impact", f"${impacts['GDP Impact']:,.0f}")
+    st.metric("GDP Impact", format_large_number(impacts['GDP Impact']))
 with col3:
     st.metric("QALY Impact", f"{impacts['QALY Impact']:,.0f}")
 
 # Add visualizations
+st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
 st.markdown("### Impact Analysis")
+st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
 # Medicare savings breakdown
 breakdown_df = create_impact_breakdown(impacts, intervention, population_type, base_params)
 if not breakdown_df.empty:
     st.plotly_chart(plot_medicare_breakdown(breakdown_df), use_container_width=True)
+    st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
 # Population comparison
 st.plotly_chart(plot_population_comparison(intervention, base_params), use_container_width=True)
+st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
 # Add time series projections
 st.markdown("### Long-term Impact Projections")
+st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
 # Add year range selector
 projection_years = st.slider("Projection Timeline (Years)", min_value=5, max_value=20, value=10)
+st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
 
 # Calculate and display time series data
 time_series_df = calculate_time_series(intervention, population_type, base_params, projection_years)
 
 # Display Medicare savings over time
 st.plotly_chart(plot_time_series(time_series_df), use_container_width=True)
+st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
 # Display all metrics over time
 st.plotly_chart(plot_metrics_over_time(time_series_df), use_container_width=True)
+st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
 # Add summary of long-term impact
 final_year = time_series_df.iloc[-1]
@@ -396,44 +471,123 @@ st.markdown(f"""
 - Total GDP Impact: ${final_year['Cumulative GDP Impact']:,.0f}
 - Total QALYs Gained: {final_year['Cumulative QALY Impact']:,.0f}
 """)
+st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
-# Generate report
-if st.button('Generate Report'):
-    st.markdown("### Executive Summary")
+# Add sensitivity analysis
+st.markdown("### Sensitivity Analysis")
+st.markdown("Explore how changes in key parameters affect the outcomes.")
+st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
+
+# Create columns for sensitivity controls
+sens_col1, sens_col2 = st.columns(2)
+
+with sens_col1:
+    # Effect magnitude adjustment
+    effect_multiplier = st.slider(
+        "Effect Magnitude Multiplier",
+        min_value=0.5,
+        max_value=1.5,
+        value=1.0,
+        step=0.1,
+        help="Adjust the magnitude of all effects up or down"
+    )
+
+with sens_col2:
+    # Compound growth rate adjustment
+    growth_rate = st.slider(
+        "Annual Compound Growth Rate",
+        min_value=0.0,
+        max_value=0.05,
+        value=0.02,
+        step=0.005,
+        format="%.1f%%",
+        help="Adjust the annual compound growth rate of benefits"
+    )
+
+# Calculate sensitivity scenarios
+def calculate_sensitivity_scenarios(intervention, population_type, base_params, effect_mult, growth_rate):
+    # Create three scenarios
+    scenarios = {
+        'Conservative': {'effect_mult': effect_mult * 0.8, 'growth': growth_rate * 0.8},
+        'Base Case': {'effect_mult': effect_mult, 'growth': growth_rate},
+        'Optimistic': {'effect_mult': effect_mult * 1.2, 'growth': growth_rate * 1.2}
+    }
     
-    # Create impact statements based on intervention type
-    impact_statements = []
-    effects = intervention['default_effects']
+    results = {}
+    for scenario, params in scenarios.items():
+        # Modify intervention effects
+        modified_intervention = intervention.copy()
+        for category in modified_intervention['default_effects']:
+            if isinstance(modified_intervention['default_effects'][category], dict):
+                for key in modified_intervention['default_effects'][category]:
+                    modified_intervention['default_effects'][category][key] *= params['effect_mult']
+        
+        # Calculate time series with modified growth rate
+        df = calculate_time_series(
+            modified_intervention,
+            population_type,
+            base_params,
+            years=10,
+            growth_rate=params['growth']
+        )
+        results[scenario] = df.iloc[-1]  # Get final year values
     
-    if 'cognitive' in effects:
-        if 'iq_increase' in effects['cognitive']:
-            impact_statements.append(f"* IQ increase of {effects['cognitive']['iq_increase']} points")
-        if 'alzheimers_reduction' in effects['cognitive']:
-            impact_statements.append(f"* {effects['cognitive']['alzheimers_reduction']}% reduction in Alzheimer's progression")
-    
-    if 'kidney' in effects:
-        if 'ckd_progression_reduction' in effects['kidney']:
-            impact_statements.append(f"* {effects['kidney']['ckd_progression_reduction']}% reduction in CKD progression")
-    
-    if 'physical' in effects:
-        impact_statements.append(f"* {effects['physical']['muscle_mass_change']} lbs muscle mass increase")
-    
-    if 'longevity' in effects:
-        impact_statements.append(f"* {effects['longevity']['lifespan_increase']}% lifespan increase")
-    
-    effects_text = "\n".join(impact_statements)
-    
+    return pd.DataFrame(results).T
+
+# Calculate and display sensitivity analysis
+sensitivity_results = calculate_sensitivity_scenarios(
+    intervention,
+    population_type,
+    base_params,
+    effect_multiplier,
+    growth_rate
+)
+
+# Create sensitivity comparison chart
+fig = go.Figure()
+
+metrics = ['Cumulative Medicare Savings', 'Cumulative GDP Impact']
+for metric in metrics:
+    fig.add_trace(go.Bar(
+        name=metric.replace('Cumulative ', ''),
+        x=sensitivity_results.index,
+        y=sensitivity_results[metric],
+        text=[format_large_number(x) for x in sensitivity_results[metric]],
+        textposition='auto',
+    ))
+
+fig.update_layout(
+    title='10-Year Impact Scenarios',
+    barmode='group',
+    yaxis_tickformat='$,.0f',
+    height=450,
+    margin=dict(l=20, r=20, t=50, b=50),
+    title_x=0.5,
+    title_y=0.98,
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.15,
+        xanchor="center",
+        x=0.5
+    )
+)
+
+st.plotly_chart(fig, use_container_width=True)
+st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
+
+# Display scenario details
+st.markdown("#### Scenario Details (10-Year Cumulative Impact)")
+for scenario in sensitivity_results.index:
     st.markdown(f"""
-    Analysis of {intervention['name']} shows significant potential impact:
-    
-    * Annual Medicare savings of ${impacts['Medicare Savings']:,.0f}
-    * GDP increase of ${impacts['GDP Impact']:,.0f}
-    * {impacts['QALY Impact']:,.0f} Quality Adjusted Life Years gained
-    
-    These calculations are based on effects including:
-    {effects_text}
+    **{scenario}**
+    - Medicare Savings: {format_large_number(sensitivity_results.loc[scenario, 'Cumulative Medicare Savings'])}
+    - GDP Impact: {format_large_number(sensitivity_results.loc[scenario, 'Cumulative GDP Impact'])}
+    - QALYs Gained: {sensitivity_results.loc[scenario, 'Cumulative QALY Impact']:,.0f}
     """)
+    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
 # Add footer
+st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
 st.markdown("---")
-st.markdown("*This is an MVP version for demonstration purposes. Values are estimates based on provided parameters.*") 
+st.markdown("Health and Economic Impact Simulator") 
