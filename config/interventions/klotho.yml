@@ -1,0 +1,23 @@
+name: "Klotho"
+description: "Longevity and cognitive enhancement protein with kidney protective effects"
+
+default_effects:
+  cognitive:
+    iq_increase: 3.5        # points
+    alzheimers_reduction: 25.0  # percentage reduction in progression
+
+  kidney:
+    egfr_improvement: 8.0   # mL/min/1.73m²
+    ckd_progression_reduction: 30.0  # percentage
+    
+  longevity:
+    lifespan_increase: 2.5   # percentage
+    
+  healthcare:
+    hospital_visit_reduction: 20.0  # percentage reduction
+
+impact_modifiers:
+  iq_to_gdp: 0.02          # Each IQ point increases productivity by 2%
+  kidney_to_medicare: 0.15  # CKD reduction leads to 15% lower costs
+  alzheimers_to_medicare: 0.20  # Reduction leads to 20% lower related costs
+  health_quality: 0.08      # 8% improvement in quality of life 
