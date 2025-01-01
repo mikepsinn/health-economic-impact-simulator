@@ -19,4 +19,5 @@ default_effects:
 impact_modifiers:
   muscle_to_falls: 0.1       # Each lb of muscle reduces falls by 10%
   lifespan_to_gdp: 0.8      # 80% of lifespan increase converts to GDP
-  health_quality: 0.05       # 5% improvement in quality of life 
+  health_quality: 0.05       # 5% improvement in quality of life
+  kidney_to_medicare: 0.10   # Kidney biomarker improvements reduce costs by 10% 

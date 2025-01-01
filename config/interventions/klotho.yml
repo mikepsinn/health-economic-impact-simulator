@@ -20,4 +20,5 @@ impact_modifiers:
   iq_to_gdp: 0.02          # Each IQ point increases productivity by 2%
   kidney_to_medicare: 0.15  # CKD reduction leads to 15% lower costs
   alzheimers_to_medicare: 0.20  # Reduction leads to 20% lower related costs
-  health_quality: 0.08      # 8% improvement in quality of life 
+  health_quality: 0.08      # 8% improvement in quality of life
+  lifespan_to_gdp: 0.8     # 80% of lifespan increase converts to GDP 

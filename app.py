@@ -382,8 +382,109 @@ population_type = st.sidebar.selectbox(
     format_func=lambda x: x.replace('_', ' ').title()
 )
 
+# Parameter adjustment section in sidebar
+st.sidebar.markdown("### Adjust Parameters")
+st.sidebar.markdown("Modify the intervention parameters to see their impact.")
+
+# Create a deep copy of the intervention for modification
+intervention = intervention_data[selected_intervention].copy()
+effects = intervention['default_effects']
+
+# Physical effects adjustments
+if 'physical' in effects:
+    st.sidebar.markdown("#### Physical Effects")
+    effects['physical']['muscle_mass_change'] = st.sidebar.slider(
+        "Muscle Mass Change (lbs)",
+        min_value=-5.0,
+        max_value=10.0,
+        value=float(effects['physical']['muscle_mass_change']),
+        step=0.5
+    )
+    effects['physical']['fat_mass_change'] = st.sidebar.slider(
+        "Fat Mass Change (lbs)",
+        min_value=-10.0,
+        max_value=5.0,
+        value=float(effects['physical']['fat_mass_change']),
+        step=0.5
+    )
+
+# Cognitive effects adjustments
+if 'cognitive' in effects:
+    st.sidebar.markdown("#### Cognitive Effects")
+    if 'iq_increase' in effects['cognitive']:
+        effects['cognitive']['iq_increase'] = st.sidebar.slider(
+            "IQ Increase (points)",
+            min_value=0.0,
+            max_value=10.0,
+            value=float(effects['cognitive']['iq_increase']),
+            step=0.5
+        )
+    if 'alzheimers_reduction' in effects['cognitive']:
+        effects['cognitive']['alzheimers_reduction'] = st.sidebar.slider(
+            "Alzheimer's Reduction (%)",
+            min_value=0.0,
+            max_value=50.0,
+            value=float(effects['cognitive']['alzheimers_reduction']),
+            step=5.0
+        )
+
+# Kidney effects adjustments
+if 'kidney' in effects:
+    st.sidebar.markdown("#### Kidney Effects")
+    if 'egfr_improvement' in effects['kidney']:
+        effects['kidney']['egfr_improvement'] = st.sidebar.slider(
+            "eGFR Improvement",
+            min_value=0.0,
+            max_value=15.0,
+            value=float(effects['kidney']['egfr_improvement']),
+            step=0.5
+        )
+    if 'ckd_progression_reduction' in effects['kidney']:
+        effects['kidney']['ckd_progression_reduction'] = st.sidebar.slider(
+            "CKD Progression Reduction (%)",
+            min_value=0.0,
+            max_value=50.0,
+            value=float(effects['kidney']['ckd_progression_reduction']),
+            step=5.0
+        )
+
+# Longevity effects adjustments
+if 'longevity' in effects:
+    st.sidebar.markdown("#### Longevity Effects")
+    effects['longevity']['lifespan_increase'] = st.sidebar.slider(
+        "Lifespan Increase (%)",
+        min_value=0.0,
+        max_value=5.0,
+        value=float(effects['longevity']['lifespan_increase']),
+        step=0.1
+    )
+
+# Healthcare effects adjustments
+if 'healthcare' in effects:
+    st.sidebar.markdown("#### Healthcare Effects")
+    effects['healthcare']['hospital_visit_reduction'] = st.sidebar.slider(
+        "Hospital Visit Reduction (%)",
+        min_value=0.0,
+        max_value=50.0,
+        value=float(effects['healthcare']['hospital_visit_reduction']),
+        step=5.0
+    )
+
+# Impact modifier adjustments
+st.sidebar.markdown("#### Impact Modifiers")
+modifiers = intervention['impact_modifiers']
+for key, value in modifiers.items():
+    # Convert key from snake_case to Title Case for display
+    display_name = " ".join(word.capitalize() for word in key.split('_'))
+    modifiers[key] = st.sidebar.slider(
+        display_name,
+        min_value=0.0,
+        max_value=1.0,
+        value=float(value),
+        step=0.05
+    )
+
 # Display intervention description
-intervention = intervention_data[selected_intervention]
 st.markdown(f"## {intervention['name']}")
 st.markdown(intervention['description'])
 
@@ -415,6 +516,132 @@ with col2:
         st.write(f"Hospital Visit Reduction: {effects['healthcare']['hospital_visit_reduction']}%")
     if 'kidney' in effects:
         st.write(f"CKD Progression Reduction: {effects['kidney']['ckd_progression_reduction']}%")
+
+# Add equations section
+st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
+st.markdown("### Calculation Details")
+st.markdown("Current equations and parameters used in the model:")
+
+# Get population for calculations
+pop = base_params['population'][population_type]
+
+# Medicare Savings Equations
+st.markdown("#### Medicare Savings Components")
+if 'healthcare' in effects:
+    hospital_reduction = effects['healthcare']['hospital_visit_reduction'] / 100
+    hospital_savings = (
+        pop * 
+        base_params['economics']['medicare_per_capita'] * 
+        base_params['health_baselines']['medicare_enrollment_rate'] *
+        hospital_reduction
+    )
+    st.markdown(f"""
+    **Hospital Visit Savings:**
+    ```
+    Population ({format_large_number(pop)}) × 
+    Medicare per Capita (${base_params['economics']['medicare_per_capita']:,}) × 
+    Medicare Enrollment Rate ({base_params['health_baselines']['medicare_enrollment_rate']:.3f}) × 
+    Hospital Visit Reduction ({effects['healthcare']['hospital_visit_reduction']}%) = 
+    {format_large_number(hospital_savings)}
+    ```
+    """)
+
+if 'cognitive' in effects and 'alzheimers_reduction' in effects['cognitive'] and population_type == 'over_60':
+    alz_reduction = effects['cognitive']['alzheimers_reduction'] / 100
+    alz_savings = (
+        base_params['economics']['alzheimers_annual_cost'] * 
+        alz_reduction * 
+        intervention['impact_modifiers']['alzheimers_to_medicare']
+    )
+    st.markdown(f"""
+    **Alzheimer's Cost Savings:**
+    ```
+    Annual Cost (${base_params['economics']['alzheimers_annual_cost']:,}) × 
+    Reduction ({effects['cognitive']['alzheimers_reduction']}%) × 
+    Medicare Impact ({intervention['impact_modifiers']['alzheimers_to_medicare']:.2f}) = 
+    {format_large_number(alz_savings)}
+    ```
+    """)
+
+if 'kidney' in effects and 'ckd_progression_reduction' in effects['kidney']:
+    ckd_reduction = effects['kidney']['ckd_progression_reduction'] / 100
+    kidney_savings = (
+        base_params['economics']['ckd_annual_cost'] * 
+        ckd_reduction * 
+        intervention['impact_modifiers']['kidney_to_medicare']
+    )
+    st.markdown(f"""
+    **Kidney Disease Savings:**
+    ```
+    Annual Cost (${base_params['economics']['ckd_annual_cost']:,}) × 
+    Progression Reduction ({effects['kidney']['ckd_progression_reduction']}%) × 
+    Medicare Impact ({intervention['impact_modifiers']['kidney_to_medicare']:.2f}) = 
+    {format_large_number(kidney_savings)}
+    ```
+    """)
+
+# GDP Impact Equations
+st.markdown("#### GDP Impact Components")
+if 'cognitive' in effects and 'iq_increase' in effects['cognitive']:
+    iq_impact = effects['cognitive']['iq_increase'] * intervention['impact_modifiers']['iq_to_gdp']
+    iq_gdp = pop * base_params['economics']['gdp_per_capita'] * iq_impact
+    st.markdown(f"""
+    **IQ-based GDP Impact:**
+    ```
+    Population ({format_large_number(pop)}) × 
+    GDP per Capita (${base_params['economics']['gdp_per_capita']:,}) × 
+    IQ Increase ({effects['cognitive']['iq_increase']} points) × 
+    GDP Impact per Point ({intervention['impact_modifiers']['iq_to_gdp']:.2f}) = 
+    {format_large_number(iq_gdp)}
+    ```
+    """)
+
+if 'longevity' in effects:
+    lifespan_impact = effects['longevity']['lifespan_increase'] / 100
+    longevity_gdp = (
+        pop * 
+        base_params['economics']['gdp_per_capita'] * 
+        lifespan_impact * 
+        intervention['impact_modifiers']['lifespan_to_gdp']
+    )
+    st.markdown(f"""
+    **Longevity-based GDP Impact:**
+    ```
+    Population ({format_large_number(pop)}) × 
+    GDP per Capita (${base_params['economics']['gdp_per_capita']:,}) × 
+    Lifespan Increase ({effects['longevity']['lifespan_increase']}%) × 
+    GDP Impact ({intervention['impact_modifiers']['lifespan_to_gdp']:.2f}) = 
+    {format_large_number(longevity_gdp)}
+    ```
+    """)
+
+# QALY Calculations
+st.markdown("#### QALY Impact Components")
+qaly_base = pop * base_params['health_baselines']['average_lifespan']
+quality_qaly = qaly_base * intervention['impact_modifiers']['health_quality']
+st.markdown(f"""
+**Quality of Life QALYs:**
+```
+Population ({format_large_number(pop)}) × 
+Average Lifespan ({base_params['health_baselines']['average_lifespan']} years) × 
+Health Quality Impact ({intervention['impact_modifiers']['health_quality']:.2f}) = 
+{quality_qaly:,.0f} QALYs
+```
+""")
+
+if 'longevity' in effects:
+    longevity_qaly = qaly_base * (effects['longevity']['lifespan_increase'] / 100)
+    st.markdown(f"""
+    **Longevity QALYs:**
+    ```
+    Population ({format_large_number(pop)}) × 
+    Average Lifespan ({base_params['health_baselines']['average_lifespan']} years) × 
+    Lifespan Increase ({effects['longevity']['lifespan_increase']}%) = 
+    {longevity_qaly:,.0f} QALYs
+    ```
+    """)
+
+st.markdown("<div style='margin-bottom: 3rem;'></div>", unsafe_allow_html=True)
 
 # Calculate and display impacts
 st.markdown("<div style='margin-top: 3rem;'></div>", unsafe_allow_html=True)
