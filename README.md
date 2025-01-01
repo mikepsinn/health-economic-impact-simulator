@@ -25,6 +25,54 @@ The simulator:
    - View results and projections
    - Export data for study design and reporting
 
+## Input Parameters
+
+### Population Parameters
+- Total population size
+- Age distribution
+- Current Medicare spending per capita
+- Current GDP per capita
+- Baseline health metrics by age group
+
+### Intervention Effects
+- Muscle mass change (lbs)
+- Fat mass change (lbs)
+- Lifespan increase (%)
+- IQ change (points)
+- Disease progression modifiers (%)
+- Biomarker changes:
+  - eGFR change
+  - Cystatin C change
+
+## Output Calculations
+
+### Economic Impact
+1. Medicare Spending Change ($)
+   ```
+   Δ Medicare = Population × (Current Medicare per capita × Health Impact Modifier)
+   ```
+
+2. GDP Impact ($)
+   ```
+   Δ GDP = Population × (GDP per capita × Lifespan Increase × Productivity Modifier)
+   ```
+
+3. QALYs
+   ```
+   Δ QALYs = Population × (Lifespan Change + Health Quality Modifier)
+   ```
+
+### Health Metrics
+1. Population Health Impact
+   ```
+   Total Health Benefit = Σ(Individual Benefits × Population Distribution)
+   ```
+
+2. Healthcare Utilization
+   ```
+   Δ Hospital Visits = Population × (Baseline Rate × Health Impact Modifier)
+   ```
+
 ## Key Features
 
 - Real-time calculation updates
