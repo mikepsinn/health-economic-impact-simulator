@@ -34,3 +34,4 @@ venv/
 
 # Project specific
 data/interventions/*.yaml
+.ipynb_checkpoints/
