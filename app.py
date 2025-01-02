@@ -139,11 +139,10 @@ impacts = calculate_impacts(intervention, population_type, base_params)
 
 # Display key parameters
 st.markdown("### Key Parameters")
-st.markdown("Current parameter values and their effects on the model.")
-st.markdown("👈 Open the sidebar to adjust parameters.")
+st.markdown("Current parameter values and their effects on the model. Click any parameter to adjust its value in the sidebar.")
 st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
-# Create three columns for better organization
+# Create columns for organization
 col1, col2 = st.columns(2)
 
 with col1:
@@ -155,9 +154,12 @@ with col1:
                 if param_name in EFFECT_PARAMETERS:
                     param_def = EFFECT_PARAMETERS[param_name]
                     unit_str = f" {param_def.unit}" if param_def.unit else ""
-                    # Parameter value
+                    # Parameter value with link to sidebar
                     st.markdown(
-                        f"*{param_name.replace('_', ' ').title()}:* {value}{unit_str}",
+                        f"*<a href='#' onclick=\"javascript:document.querySelector('[data-testid=\\'stSidebar\\'] [aria-label=\\'{param_name.replace('_', ' ').title()}\\']').scrollIntoView(); return false;\">"
+                        f"{param_name.replace('_', ' ').title()}</a>:* {value}{unit_str} "
+                        f"<small><em>(click to adjust)</em></small>",
+                        unsafe_allow_html=True
                     )
                     # Help text in muted color
                     st.markdown(
@@ -171,9 +173,12 @@ with col2:
     for key, value in intervention['impact_modifiers'].items():
         if key in IMPACT_MODIFIERS:
             mod_def = IMPACT_MODIFIERS[key]
-            # Parameter value
+            # Parameter value with link to sidebar
             st.markdown(
-                f"*{key.replace('_', ' ').title()}:* {value:.2f}",
+                f"*<a href='#' onclick=\"javascript:document.querySelector('[data-testid=\\'stSidebar\\'] [aria-label=\\'{key.replace('_', ' ').title()}\\']').scrollIntoView(); return false;\">"
+                f"{key.replace('_', ' ').title()}</a>:* {value:.2f} "
+                f"<small><em>(click to adjust)</em></small>",
+                unsafe_allow_html=True
             )
             # Help text in muted color
             st.markdown(
