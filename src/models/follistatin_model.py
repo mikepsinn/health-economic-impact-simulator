@@ -82,24 +82,47 @@ class FollistatinImpactModel(BaseImpactModel):
         ]
         return all(validations)
 
-    def sensitivity_analysis(self) -> Dict[str, Dict[str, float]]:
-        """Perform sensitivity analysis on key parameters."""
-        base_results = self.generate_full_report()
-        sensitivity = {}
+    def get_param_ranges(self) -> Dict[str, List[float]]:
+        """Get parameter ranges for sensitivity analysis."""
+        return {
+            'muscle_gain_lb': [1.0, 2.0, 3.0],
+            'fat_loss_lb': [1.0, 2.0, 3.0],
+            'lifespan_increase_years': [1.0, 1.925, 3.0],
+            'healthspan_improvement_percent': [2.5, 5.0, 7.5],
+            'savings_per_lb': [5.0, 10.0, 15.0]
+        }
+
+    def get_current_params(self) -> Dict[str, float]:
+        """Get current parameter values as dictionary."""
+        return {
+            'muscle_gain_lb': self.intervention.muscle_gain_lb,
+            'fat_loss_lb': self.intervention.fat_loss_lb,
+            'lifespan_increase_years': self.intervention.lifespan_increase_years,
+            'healthspan_improvement_percent': self.intervention.healthspan_improvement_percent,
+            'savings_per_lb': self.intervention.savings_per_lb
+        }
+
+    def calculate_impacts_for_params(self, params: Dict[str, float]) -> Dict[str, float]:
+        """Calculate impacts for a given set of parameters."""
+        # Store original values
+        orig_values = self.get_current_params()
         
-        # Vary muscle/fat impact by ±50%
-        for param in ["muscle_gain_lb", "fat_loss_lb"]:
-            original_value = getattr(self.intervention, param)
-            results = {}
-            
-            for factor in [0.5, 1.5]:  # -50% and +50%
-                setattr(self.intervention, param, original_value * factor)
-                results[f"{factor:.1f}x"] = self.generate_full_report()
-            
-            setattr(self.intervention, param, original_value)  # Reset
-            sensitivity[param] = results
-            
-        return sensitivity
+        # Update parameters
+        for param, value in params.items():
+            setattr(self.intervention, param, value)
+        
+        # Calculate impacts
+        impacts = {
+            'healthcare_savings': self.calculate_healthcare_savings(),
+            'gdp_impact': self.calculate_gdp_impact(),
+            'medicare_savings': self.calculate_medicare_impact()
+        }
+        
+        # Restore original values
+        for param, value in orig_values.items():
+            setattr(self.intervention, param, value)
+        
+        return impacts
 
 
 def main():
