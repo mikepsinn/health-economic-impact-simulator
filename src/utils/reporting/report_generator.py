@@ -21,12 +21,14 @@ from .writers import (
 def get_report_filename(intervention_name: str, params: BaseInterventionParams) -> str:
     """Generate report filename based on intervention parameters."""
     clean_name = intervention_name.lower().replace(" ", "_")
+    muscle_change = params.physical.muscle_mass_change_lb if params.physical else 0.0
+    fat_change = params.physical.fat_mass_change_lb if params.physical else 0.0
     return (
         f"{clean_name}_"
-        f"m{params.muscle_mass_change_lb:+.1f}lb_"
-        f"f{params.fat_mass_change_lb:+.1f}lb_"
+        f"m{muscle_change:+.1f}lb_"
+        f"f{fat_change:+.1f}lb_"
         f"l{params.lifespan_increase_years:.2f}y_"
-        f"h{params.healthspan_improvement_percent:.1f}pct.md"
+        f"h{params.longevity.healthspan_improvement_percent:.1f}pct.md"
     )
 
 def generate_report(

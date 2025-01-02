@@ -44,24 +44,48 @@ def write_intervention_analysis(
     """Write intervention analysis section."""
     f.write("## Intervention Analysis\n\n")
     
-    f.write("### Physical Impact Pathway\n")
-    f.write(f"- Muscle Mass Change: {model.intervention.muscle_mass_change_lb:+.1f} lb\n")
-    f.write(f"- Fat Mass Change: {model.intervention.fat_mass_change_lb:+.1f} lb\n")
-    f.write("These changes affect:\n")
-    f.write("1. Healthcare utilization through improved mobility and reduced fall risk\n")
-    f.write("2. Quality of life through enhanced physical capability\n")
-    f.write("3. Healthcare costs through metabolic health improvements\n\n")
+    # Physical Impact
+    if model.intervention.physical:
+        f.write("### Physical Impact Pathway\n")
+        f.write(f"- Muscle Mass Change: {model.intervention.physical.muscle_mass_change_lb:+.1f} lb\n")
+        f.write(f"- Fat Mass Change: {model.intervention.physical.fat_mass_change_lb:+.1f} lb\n")
+        f.write("These changes affect:\n")
+        f.write("1. Healthcare utilization through improved mobility and reduced fall risk\n")
+        f.write("2. Quality of life through enhanced physical capability\n")
+        f.write("3. Healthcare costs through metabolic health improvements\n\n")
     
+    # Cognitive Impact
+    if model.intervention.cognitive:
+        f.write("### Cognitive Impact Pathway\n")
+        f.write(f"- IQ Increase: {model.intervention.cognitive.iq_increase:+.1f} points\n")
+        f.write(f"- Alzheimer's Progression Reduction: {model.intervention.cognitive.alzheimers_reduction:.1f}%\n")
+        f.write("These improvements lead to:\n")
+        f.write("1. Enhanced workforce productivity\n")
+        f.write("2. Reduced cognitive decline costs\n")
+        f.write("3. Improved quality of life\n\n")
+    
+    # Kidney Impact
+    if model.intervention.kidney:
+        f.write("### Kidney Function Impact Pathway\n")
+        f.write(f"- eGFR Improvement: {model.intervention.kidney.egfr_improvement:+.1f} mL/min/1.73m²\n")
+        f.write(f"- CKD Progression Reduction: {model.intervention.kidney.ckd_progression_reduction:.1f}%\n")
+        f.write("These improvements result in:\n")
+        f.write("1. Reduced kidney disease progression\n")
+        f.write("2. Lower dialysis and treatment costs\n")
+        f.write("3. Enhanced patient wellbeing\n\n")
+    
+    # Longevity Impact
     f.write("### Longevity Impact Pathway\n")
     f.write(f"- Lifespan Increase: {model.intervention.lifespan_increase_years:.2f} years\n")
-    f.write(f"- Health Quality Improvement: {format_percentage(model.intervention.healthspan_improvement_percent)}\n")
+    f.write(f"- Health Quality Improvement: {format_percentage(model.intervention.longevity.healthspan_improvement_percent)}\n")
     f.write("These improvements contribute to:\n")
     f.write("1. Extended workforce participation\n")
     f.write("2. Increased lifetime earnings\n")
     f.write("3. Enhanced quality of life\n\n")
     
+    # Healthcare System Impact
     f.write("### Healthcare System Impact\n")
-    f.write(f"- Hospital Visit Reduction: {format_percentage(model.intervention.hospital_visit_reduction_percent)}\n")
+    f.write(f"- Hospital Visit Reduction: {format_percentage(model.intervention.healthcare.hospital_visit_reduction_percent)}\n")
     f.write("This leads to:\n")
     f.write("1. Reduced acute care costs\n")
     f.write("2. Lower Medicare spending\n")
@@ -81,14 +105,16 @@ def write_economic_calculations(
     equation += "                Population * Baseline_Visits * Visit_Reduction * Cost_per_Visit"
     f.write(format_equation(equation))
     
+    muscle_change = model.intervention.physical.muscle_mass_change_lb if model.intervention.physical else 0.0
+    fat_change = model.intervention.physical.fat_mass_change_lb if model.intervention.physical else 0.0
     composition_savings = (
         model.pop.target_population * 
-        (model.intervention.muscle_mass_change_lb + model.intervention.fat_mass_change_lb) * 
-        model.intervention.savings_per_lb
+        (muscle_change + fat_change) * 
+        model.intervention.healthcare.savings_per_lb
     )
-    baseline_visits = model.pop.target_population * base_config['health_baselines']['hospital_visits_per_year']
-    visit_reduction = baseline_visits * (model.intervention.hospital_visit_reduction_percent / 100.0)
-    hospital_savings = visit_reduction * model.intervention.cost_per_hospital_visit
+    baseline_visits = model.pop.target_population * base_config['healthcare']['annual_hospital_visits'] / model.pop.total_population
+    visit_reduction = baseline_visits * (model.intervention.healthcare.hospital_visit_reduction_percent / 100.0)
+    hospital_savings = visit_reduction * model.intervention.healthcare.cost_per_hospital_visit
     
     f.write(f"\nComposition-related savings: {format_currency(composition_savings)}\n")
     f.write(f"Hospital visit reduction savings: {format_currency(hospital_savings)}\n")
@@ -116,7 +142,7 @@ def write_economic_calculations(
     medicare_impact = (
         model.pop.medicare_beneficiaries * 
         model.econ.annual_healthcare_cost * 
-        (model.intervention.healthspan_improvement_percent / 100.0)
+        (model.intervention.longevity.healthspan_improvement_percent / 100.0)
     )
     f.write(f"\nAnnual Medicare savings: {format_currency(medicare_impact)}\n\n")
     

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate economic impact report for interventions."""
 
-import yaml
+import importlib.util
 from pathlib import Path
 
 from src.models.base_model import (
@@ -11,50 +11,49 @@ from src.models.base_model import (
     BaseInterventionParams
 )
 from src.utils.reporting import generate_report
+from config.global_parameters import config as global_config
 
-def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+def load_python_config(path: str) -> object:
+    """Load configuration from Python file."""
+    spec = importlib.util.spec_from_file_location("config", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.config
 
 def main():
     """Main entry point."""
-    # Load configurations
-    base_config = load_config('config/base_parameters.yml')
-    
     # Process each intervention config
-    for config_file in Path('config/interventions').glob('*.yml'):
-        if config_file.name == 'template.yml':
+    for config_file in Path('config/interventions').glob('*.py'):
+        if config_file.name == '__init__.py':
             continue
             
-        intervention_config = load_config(str(config_file))
+        intervention_config = load_python_config(str(config_file))
         
         # Create model parameters
         pop_params = BasePopulationParams(
-            total_population=base_config['population']['total'],
-            target_population=base_config['population']['target'],
-            medicare_beneficiaries=base_config['population']['medicare_beneficiaries'],
-            workforce_fraction=base_config['population']['workforce_fraction']
+            total_population=global_config.population.total,
+            target_population=global_config.population.target,
+            medicare_beneficiaries=global_config.population.medicare_beneficiaries,
+            workforce_fraction=global_config.population.workforce_fraction
         )
         
         econ_params = BaseEconomicParams(
-            annual_healthcare_cost=base_config['economics']['annual_healthcare_cost'],
-            annual_productivity=base_config['economics']['annual_productivity'],
-            discount_rate=base_config['economics']['discount_rate']
+            annual_healthcare_cost=global_config.economics.annual_healthcare_cost,
+            annual_productivity=global_config.economics.annual_productivity,
+            discount_rate=global_config.economics.discount_rate
         )
         
         intervention_params = BaseInterventionParams.from_config(
-            intervention_config,
-            base_config
+            intervention_config.model_dump(),
+            global_config.model_dump()
         )
         
         # Create and validate model
         model = BaseImpactModel(pop_params, econ_params, intervention_params)
-        model.validate_assumptions()
         
         # Generate report
-        report = model.generate_full_report()
-        report_path = generate_report(intervention_config, model, report, base_config)
+        report = model.generate_full_report(global_config.model_dump())
+        report_path = generate_report(intervention_config.model_dump(), model, report, global_config.model_dump())
         print(f"Generated report: {report_path}")
 
 if __name__ == '__main__':
