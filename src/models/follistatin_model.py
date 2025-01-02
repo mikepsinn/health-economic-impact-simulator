@@ -149,4 +149,5 @@ def main():
             print(f"  {factor}: Healthcare savings = ${values['annual_healthcare_savings_billions']:.2f}B")
 
 
-if __name__ == "__main
+if __name__ == "__main__":
+    main() 

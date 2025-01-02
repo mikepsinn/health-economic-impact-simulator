@@ -1,0 +1,3 @@
+"""
+Economic impact models package.
+""" 

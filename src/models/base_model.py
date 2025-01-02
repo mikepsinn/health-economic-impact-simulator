@@ -10,9 +10,9 @@ from dataclasses import dataclass
 from typing import Dict, Any, Optional, List
 import pandas as pd
 
-from ..utils.stratification import AgeStratification
-from ..utils.monte_carlo import run_monte_carlo, calculate_confidence_intervals
-from ..utils.visualization import (
+from src.utils.stratification import AgeStratification
+from src.utils.monte_carlo import run_monte_carlo, calculate_confidence_intervals
+from src.utils.visualization import (
     plot_sensitivity_analysis,
     plot_monte_carlo_results,
     plot_time_series
