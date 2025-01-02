@@ -1,45 +1,50 @@
-"""Calculator for kidney function benefits."""
+"""Kidney impact calculator."""
 
-from typing import Dict, Optional
+from typing import Dict, TextIO
 
-from ..parameters import (
-    KidneyParams,
-    BasePopulationParams,
-    BaseEconomicParams,
-    ImpactModifiers
-)
-from ..benefits import KidneyBenefits
+from src.utils.reporting.formatters import format_currency, format_equation, format_number
+from . import BaseCalculator
 
-def calculate_kidney_benefits(
-    params: Optional[KidneyParams],
-    pop: BasePopulationParams,
-    econ: BaseEconomicParams,
-    modifiers: ImpactModifiers,
-    base_config: Dict
-) -> Optional[KidneyBenefits]:
-    """Calculate benefits from kidney function improvements."""
-    if not params:
-        return None
+class KidneyCalculator(BaseCalculator):
+    """Calculator for kidney intervention impacts."""
+
+    def calculate(self, params: Dict) -> Dict:
+        """Calculate impacts from kidney function changes."""
+        egfr_improvement = params.get('egfr_improvement', 0)
+        ckd_reduction = params.get('ckd_progression_reduction', 0) / 100
         
-    # Calculate Medicare savings from reduced CKD progression
-    medicare_savings = (
-        (params.ckd_progression_reduction / 100.0) *
-        modifiers.kidney_to_medicare *
-        base_config['healthcare']['annual_ckd_cost']
-    )
+        # Calculate Medicare savings from improved kidney function
+        medicare_savings = (
+            self.pop.medicare_beneficiaries * 
+            ckd_reduction * 
+            self.modifiers.kidney_to_medicare * 
+            self.healthcare.annual_ckd_cost
+        )
+        
+        # Calculate QALYs from kidney improvements
+        qalys = (
+            self.pop.target_population * 
+            (egfr_improvement * 0.02 + ckd_reduction * 0.1) * 
+            self.modifiers.health_quality
+        )
+        
+        return {
+            'medicare_savings': medicare_savings,
+            'qalys_gained': qalys
+        }
     
-    # Calculate QALY improvement
-    # Each mL/min/1.73m² of eGFR improves quality of life by 1%
-    qaly_egfr = params.egfr_improvement * 0.01 * pop.target_population
-    
-    # Reduced CKD progression improves quality of life by 30%
-    qaly_ckd = (
-        pop.medicare_beneficiaries *
-        (params.ckd_progression_reduction / 100.0) *
-        0.3
-    )
-    
-    return KidneyBenefits(
-        medicare_savings=medicare_savings,
-        qaly_improvement=qaly_egfr + qaly_ckd
-    ) 
+    def write_calculations(self, f: TextIO, params: Dict, results: Dict) -> None:
+        """Write kidney impact calculations to report."""
+        f.write("### Kidney Function Impact Calculations\n")
+        
+        # Medicare savings
+        f.write("Medicare savings from reduced CKD progression:\n\n")
+        equation = "Medicare Savings = Beneficiaries × CKD_Reduction × Cost × Medicare_Impact"
+        f.write(format_equation(equation))
+        f.write(f"\nAnnual Medicare savings: {format_currency(results['medicare_savings'])}\n\n")
+        
+        # QALY impact
+        f.write("Quality-adjusted life years gained from kidney improvements:\n\n")
+        equation = "QALYs = Population × (eGFR_Effect + CKD_Effect) × Health_Quality"
+        f.write(format_equation(equation))
+        f.write(f"\nTotal QALYs gained: {format_number(results['qalys_gained'])}\n\n") 

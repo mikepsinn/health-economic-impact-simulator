@@ -44,7 +44,7 @@ class DetailedBenefits(BaseModel):
 class Report(BaseModel):
     """Complete report data model."""
     metrics: ReportMetrics
-    benefits: DetailedBenefits
+    benefits: Optional[DetailedBenefits] = None
     validation_warnings: Optional[str] = Field(default="", description="Validation warnings if any bounds are exceeded")
     
     class Config:

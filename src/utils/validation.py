@@ -7,16 +7,16 @@ from typing import Dict, Optional
 class ValidationBounds:
     """Bounds for validating economic calculations."""
     # US total healthcare expenditure 2023: ~$4.5T
-    MAX_HEALTHCARE_SAVINGS_PCT = 0.20  # Max 20% reduction
+    MAX_HEALTHCARE_SAVINGS_PCT = 0.05  # Max 5% reduction
     
     # US GDP 2023: ~$25T
-    MAX_GDP_IMPACT_PCT = 0.05  # Max 5% impact
+    MAX_GDP_IMPACT_PCT = 0.02  # Max 2% impact
     
     # Medicare spending 2023: ~$1T
-    MAX_MEDICARE_SAVINGS_PCT = 0.25  # Max 25% reduction
+    MAX_MEDICARE_SAVINGS_PCT = 0.10  # Max 10% reduction
     
     # Life expectancy ~79 years
-    MAX_QALY_PER_PERSON = 20  # Max additional QALYs per person
+    MAX_QALY_PER_PERSON = 5  # Max additional QALYs per person
 
 def validate_economic_impacts(
     healthcare_savings: float,
@@ -25,8 +25,8 @@ def validate_economic_impacts(
     qalys: float,
     population: int,
     base_healthcare_cost: float,
-    base_gdp: Optional[float] = None,
-    base_medicare: Optional[float] = None,
+    base_gdp: Optional[float] = 25e12,  # US GDP ~$25T
+    base_medicare: Optional[float] = 1e12,  # Medicare spending ~$1T
 ) -> Dict[str, str]:
     """
     Validate economic impact calculations against realistic bounds.
@@ -53,7 +53,7 @@ def validate_economic_impacts(
                 f"impact of {bounds.MAX_GDP_IMPACT_PCT:.1%} of GDP"
             )
     
-    # Validate Medicare savings  
+    # Validate Medicare savings
     if base_medicare:
         medicare_pct = medicare_savings / base_medicare
         if medicare_pct > bounds.MAX_MEDICARE_SAVINGS_PCT:
@@ -63,22 +63,22 @@ def validate_economic_impacts(
             )
     
     # Validate QALYs
-    qalys_per_person = qalys / population
-    if qalys_per_person > bounds.MAX_QALY_PER_PERSON:
+    qaly_per_person = qalys / population
+    if qaly_per_person > bounds.MAX_QALY_PER_PERSON:
         messages['qalys'] = (
-            f"QALYs gained per person ({qalys_per_person:.1f}) exceed maximum "
-            f"expected gain of {bounds.MAX_QALY_PER_PERSON} years"
+            f"QALYs gained per person ({qaly_per_person:.1f}) exceed maximum "
+            f"expected gain of {bounds.MAX_QALY_PER_PERSON} QALYs"
         )
     
     return messages
 
 def format_validation_messages(messages: Dict[str, str]) -> str:
-    """Format validation messages into a warning section for the report."""
+    """Format validation messages for report."""
     if not messages:
         return ""
-        
-    warning = "\n## ⚠️ Validation Warnings\n\n"
-    warning += "The following calculations exceed expected realistic bounds:\n\n"
+    
+    formatted = "### Validation Warnings\n\n"
+    formatted += "The following calculations exceed expected bounds:\n\n"
     for msg in messages.values():
-        warning += f"- {msg}\n"
-    return warning 
+        formatted += f"- {msg}\n"
+    return formatted 

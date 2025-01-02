@@ -1,20 +1,57 @@
-"""Benefit calculators for different intervention effects."""
+"""Impact calculators for different intervention pathways."""
 
-from .cognitive import calculate_cognitive_benefits, CognitiveBenefits
-from .kidney import calculate_kidney_benefits, KidneyBenefits
-from .physical import calculate_physical_benefits, PhysicalBenefits
-from .longevity import calculate_longevity_benefits, LongevityBenefits
-from .healthcare import calculate_healthcare_benefits, HealthcareBenefits
+from abc import ABC, abstractmethod
+from typing import TextIO, Dict
+
+from src.models.parameters import (
+    BasePopulationParams,
+    BaseEconomicParams,
+    HealthcareParams,
+    ImpactModifiers
+)
+
+class BaseCalculator(ABC):
+    """Base class for impact calculators."""
+    
+    def __init__(
+        self,
+        pop: BasePopulationParams,
+        econ: BaseEconomicParams,
+        healthcare: HealthcareParams,
+        modifiers: ImpactModifiers
+    ):
+        self.pop = pop
+        self.econ = econ
+        self.healthcare = healthcare
+        self.modifiers = modifiers
+    
+    @abstractmethod
+    def calculate(self, params: Dict) -> Dict:
+        """Calculate impacts from intervention parameters."""
+        pass
+
+    @abstractmethod
+    def write_calculations(self, f: TextIO, params: Dict, results: Dict) -> None:
+        """Write calculation details to report file.
+        
+        Args:
+            f: Report file handle
+            params: Input parameters used in calculations
+            results: Results from calculate() method
+        """
+        pass
+
+from .physical import PhysicalCalculator
+from .cognitive import CognitiveCalculator
+from .kidney import KidneyCalculator
+from .longevity import LongevityCalculator
+from .healthcare import HealthcareCalculator
 
 __all__ = [
-    'calculate_cognitive_benefits',
-    'calculate_kidney_benefits',
-    'calculate_physical_benefits',
-    'calculate_longevity_benefits',
-    'calculate_healthcare_benefits',
-    'CognitiveBenefits',
-    'KidneyBenefits',
-    'PhysicalBenefits',
-    'LongevityBenefits',
-    'HealthcareBenefits'
+    'BaseCalculator',
+    'PhysicalCalculator',
+    'CognitiveCalculator',
+    'KidneyCalculator',
+    'LongevityCalculator',
+    'HealthcareCalculator'
 ] 

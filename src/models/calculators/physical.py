@@ -1,48 +1,49 @@
-"""Calculator for physical composition benefits."""
+"""Physical impact calculator."""
 
-from typing import Dict, Optional
+from typing import Dict, TextIO
 
-from ..parameters import (
-    PhysicalParams,
-    BasePopulationParams,
-    BaseEconomicParams,
-    ImpactModifiers
-)
-from ..benefits import PhysicalBenefits
+from src.utils.reporting.formatters import format_currency, format_equation
+from . import BaseCalculator
 
-def calculate_physical_benefits(
-    params: Optional[PhysicalParams],
-    pop: BasePopulationParams,
-    econ: BaseEconomicParams,
-    modifiers: ImpactModifiers,
-    base_config: Dict
-) -> Optional[PhysicalBenefits]:
-    """Calculate benefits from physical composition changes."""
-    if not params:
-        return None
+class PhysicalCalculator(BaseCalculator):
+    """Calculator for physical intervention impacts."""
+
+    def calculate(self, params: Dict) -> Dict:
+        """Calculate impacts from physical changes."""
+        muscle_change = params.get('muscle_mass_change_lb', 0)
+        fat_change = params.get('fat_mass_change_lb', 0)
         
-    # Calculate healthcare savings from muscle and fat changes
-    muscle_savings = (
-        params.muscle_mass_change_lb * 
-        pop.target_population * 
-        base_config['healthcare']['savings_per_lb_muscle']
-    )
+        # Calculate healthcare savings from body composition changes
+        muscle_savings = (
+            self.pop.target_population * 
+            muscle_change * 
+            self.healthcare.savings_per_lb_muscle
+        )
+        
+        fat_savings = (
+            self.pop.target_population * 
+            abs(fat_change) * 
+            self.healthcare.savings_per_lb_fat
+        )
+        
+        return {
+            'muscle_savings': muscle_savings,
+            'fat_savings': fat_savings,
+            'total_savings': muscle_savings + fat_savings
+        }
     
-    fat_savings = (
-        abs(params.fat_mass_change_lb) *  # Use absolute value since both gain and loss have costs
-        pop.target_population * 
-        base_config['healthcare']['savings_per_lb_fat']
-    )
-    
-    total_savings = muscle_savings + fat_savings
-    
-    # Calculate QALY improvement
-    # Assume each pound of muscle gain improves quality of life by 0.001
-    # and each pound of fat loss improves quality of life by 0.0005
-    qaly_muscle = params.muscle_mass_change_lb * 0.001 * pop.target_population
-    qaly_fat = abs(params.fat_mass_change_lb) * 0.0005 * pop.target_population
-    
-    return PhysicalBenefits(
-        healthcare_savings=total_savings,
-        qaly_improvement=qaly_muscle + qaly_fat
-    ) 
+    def write_calculations(self, f: TextIO, params: Dict, results: Dict) -> None:
+        """Write physical impact calculations to report."""
+        f.write("### Physical Impact Calculations\n")
+        f.write("Healthcare savings from body composition changes:\n\n")
+        
+        # Muscle mass impact
+        equation = "Muscle Savings = Population × Muscle_Change × $12/lb"
+        f.write(format_equation(equation))
+        f.write(f"\nMuscle-related savings: {format_currency(results['muscle_savings'])}\n\n")
+        
+        # Fat mass impact
+        equation = "Fat Savings = Population × Fat_Change × $8/lb"
+        f.write(format_equation(equation))
+        f.write(f"\nFat-related savings: {format_currency(results['fat_savings'])}\n")
+        f.write(f"Total composition savings: {format_currency(results['total_savings'])}\n\n") 

@@ -48,53 +48,39 @@ class InterventionConfig(BaseModel):
     name: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
     default_effects: InterventionEffects
-    references: List[str] = Field(default_factory=list)
-
-    @validator('name')
-    def name_must_be_valid(cls, v):
-        """Validate intervention name."""
-        if not v.strip():
-            raise ValueError("Name cannot be empty or whitespace")
-        return v.strip()
 
 class PopulationConfig(BaseModel):
-    """Population parameters configuration."""
-    total: int = Field(..., gt=0)
-    target: int = Field(..., gt=0)
-    medicare_beneficiaries: int = Field(..., gt=0)
-    workforce_fraction: float = Field(..., ge=0, le=1)
-
-    @validator('target')
-    def target_must_be_valid(cls, v, values):
-        """Validate target population."""
-        if 'total' in values and v > values['total']:
-            raise ValueError("Target population cannot exceed total population")
-        return v
+    """Population parameters."""
+    total_population: int = Field(..., gt=0, description="Total population")
+    target_population: int = Field(..., gt=0, description="Target population")
+    medicare_beneficiaries: int = Field(..., gt=0, description="Medicare beneficiaries")
+    workforce_fraction: float = Field(..., gt=0, lt=1, description="Workforce participation rate")
 
 class EconomicsConfig(BaseModel):
-    """Economic parameters configuration."""
-    annual_healthcare_cost: float = Field(..., gt=0)
-    annual_productivity: float = Field(..., gt=0)
-    discount_rate: float = Field(..., ge=0, le=0.2)
+    """Economic parameters."""
+    annual_healthcare_cost: float = Field(..., gt=0, description="Annual healthcare cost per person")
+    annual_productivity: float = Field(..., gt=0, description="Annual productivity per worker")
+    discount_rate: float = Field(..., ge=0, le=0.2, description="Annual discount rate")
 
 class HealthcareConfig(BaseModel):
-    """Healthcare system parameters configuration."""
-    annual_hospital_visits: int = Field(..., gt=0)
-    annual_alzheimers_cost: float = Field(..., ge=0)
-    annual_ckd_cost: float = Field(..., ge=0)
-    savings_per_lb_muscle: float = Field(..., ge=0)
-    savings_per_lb_fat: float = Field(..., ge=0)
+    """Healthcare system parameters."""
+    annual_hospital_visits: int = Field(..., gt=0, description="Annual hospital visits")
+    annual_alzheimers_cost: float = Field(..., gt=0, description="Annual Alzheimer's cost")
+    annual_ckd_cost: float = Field(..., gt=0, description="Annual CKD cost")
+    savings_per_lb_muscle: float = Field(..., gt=0, description="Healthcare savings per pound muscle")
+    savings_per_lb_fat: float = Field(..., gt=0, description="Healthcare savings per pound fat")
+    cost_per_hospital_visit: float = Field(..., gt=0, description="Average cost per hospital visit")
 
 class ImpactModifiers(BaseModel):
-    """Global impact conversion modifiers."""
-    iq_to_gdp: float = Field(..., ge=0, le=0.1, description="GDP increase per IQ point")
-    kidney_to_medicare: float = Field(..., ge=0, le=1, description="Medicare savings from kidney improvement")
-    alzheimers_to_medicare: float = Field(..., ge=0, le=1, description="Medicare savings from Alzheimer's reduction")
-    health_quality: float = Field(..., ge=0, le=1, description="Quality of life improvement")
-    lifespan_to_gdp: float = Field(..., ge=0, le=1, description="GDP conversion from lifespan increase")
+    """Impact modifier parameters."""
+    iq_to_gdp: float = Field(..., gt=0, description="GDP impact per IQ point")
+    kidney_to_medicare: float = Field(..., gt=0, lt=1, description="Medicare savings from kidney improvement")
+    alzheimers_to_medicare: float = Field(..., gt=0, lt=1, description="Medicare savings from Alzheimer's")
+    health_quality: float = Field(..., gt=0, lt=1, description="Quality of life multiplier")
+    lifespan_to_gdp: float = Field(..., gt=0, lt=1, description="GDP impact from lifespan")
 
 class BaseConfig(BaseModel):
-    """Global configuration parameters."""
+    """Base configuration parameters."""
     population: PopulationConfig
     economics: EconomicsConfig
     healthcare: HealthcareConfig

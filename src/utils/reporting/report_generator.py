@@ -1,18 +1,21 @@
 """Report generation utilities."""
 
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Any, TYPE_CHECKING
 
-from src.models.base_model import BaseImpactModel
-from src.models.parameters import BaseInterventionParams
-from src.models.report import Report
+if TYPE_CHECKING:
+    from src.models.base_model import BaseImpactModel
+    from src.models.parameters import BaseInterventionParams
+    from src.models.report import Report
+
 from .writers import (
     write_executive_summary,
     write_study_design,
-    write_intervention_analysis
+    write_intervention_analysis,
+    write_economic_calculations
 )
 
-def get_report_filename(name: str, params: BaseInterventionParams) -> str:
+def get_report_filename(name: str, params: 'BaseInterventionParams') -> str:
     """Format report filename from key parameters."""
     # Extract key parameters for filename
     muscle = params.physical.muscle_mass_change_lb if params.physical else 0
@@ -29,7 +32,7 @@ def get_report_filename(name: str, params: BaseInterventionParams) -> str:
         f"h{health:.1f}pct.md"
     )
 
-def generate_report(config: Dict, model: BaseImpactModel, report: Report, base_params: Dict) -> str:
+def generate_report(config: Dict[str, Any], model: 'BaseImpactModel', report: 'Report', base_params: Dict[str, Any]) -> str:
     """Generate markdown report from model results."""
     # Format filename
     report_file = get_report_filename(config['name'], model.intervention)
@@ -46,9 +49,6 @@ def generate_report(config: Dict, model: BaseImpactModel, report: Report, base_p
         write_executive_summary(f, config, report)
         write_study_design(f)
         write_intervention_analysis(f, model)
+        write_economic_calculations(f, model, report)
         
-        # Add validation warnings if any
-        if report.validation_warnings:
-            f.write(report.validation_warnings)
-    
     return str(report_path) 

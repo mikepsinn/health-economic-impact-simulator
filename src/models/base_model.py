@@ -7,16 +7,17 @@ import numpy as np
 from .parameters import (
     BasePopulationParams,
     BaseEconomicParams,
-    BaseInterventionParams
+    BaseInterventionParams,
+    HealthcareParams,
+    ImpactModifiers
 )
-from .benefits import BenefitMetrics
-from .report import Report, ReportMetrics, DetailedBenefits
+from .report import Report, ReportMetrics
 from .calculators import (
-    calculate_cognitive_benefits,
-    calculate_kidney_benefits,
-    calculate_physical_benefits,
-    calculate_longevity_benefits,
-    calculate_healthcare_benefits
+    PhysicalCalculator,
+    CognitiveCalculator,
+    KidneyCalculator,
+    LongevityCalculator,
+    HealthcareCalculator
 )
 
 class BaseImpactModel:
@@ -31,117 +32,103 @@ class BaseImpactModel:
         self.pop = population_params
         self.econ = economic_params
         self.intervention = intervention_params
+        
+        # Initialize calculators
+        self.physical_calculator = PhysicalCalculator(
+            pop=self.pop,
+            econ=self.econ,
+            healthcare=self.intervention.healthcare,
+            modifiers=self.intervention.modifiers
+        )
+        self.cognitive_calculator = CognitiveCalculator(
+            pop=self.pop,
+            econ=self.econ,
+            healthcare=self.intervention.healthcare,
+            modifiers=self.intervention.modifiers
+        )
+        self.kidney_calculator = KidneyCalculator(
+            pop=self.pop,
+            econ=self.econ,
+            healthcare=self.intervention.healthcare,
+            modifiers=self.intervention.modifiers
+        )
+        self.longevity_calculator = LongevityCalculator(
+            pop=self.pop,
+            econ=self.econ,
+            healthcare=self.intervention.healthcare,
+            modifiers=self.intervention.modifiers
+        )
+        self.healthcare_calculator = HealthcareCalculator(
+            pop=self.pop,
+            econ=self.econ,
+            healthcare=self.intervention.healthcare,
+            modifiers=self.intervention.modifiers
+        )
+        
+        # Calculate results
+        self.physical_results = {}
+        self.cognitive_results = {}
+        self.kidney_results = {}
+        self.longevity_results = {}
+        self.healthcare_results = {}
+        self.calculate_all_impacts()
 
-    def generate_full_report(self, base_config: dict) -> Report:
+    def calculate_all_impacts(self) -> None:
+        """Calculate impacts from all pathways."""
+        if self.intervention.physical:
+            self.physical_results = self.physical_calculator.calculate(
+                self.intervention.physical.dict()
+            )
+            
+        if self.intervention.cognitive:
+            self.cognitive_results = self.cognitive_calculator.calculate(
+                self.intervention.cognitive.dict()
+            )
+            
+        if self.intervention.kidney:
+            self.kidney_results = self.kidney_calculator.calculate(
+                self.intervention.kidney.dict()
+            )
+            
+        self.longevity_results = self.longevity_calculator.calculate(
+            self.intervention.longevity.dict()
+        )
+        
+        self.healthcare_results = self.healthcare_calculator.calculate(
+            self.intervention.healthcare.dict()
+        )
+
+    def generate_full_report(self, base_config: Dict[str, Any]) -> Report:
         """Generate a complete impact report."""
-        # Calculate benefits
-        cognitive_benefits = calculate_cognitive_benefits(
-            self.intervention.cognitive,
-            self.pop,
-            self.econ,
-            self.intervention.modifiers,
-            base_config
+        # Calculate total metrics
+        total_healthcare_savings = (
+            self.physical_results.get('healthcare_savings', 0) +
+            self.healthcare_results.get('visit_savings', 0)
         )
         
-        kidney_benefits = calculate_kidney_benefits(
-            self.intervention.kidney,
-            self.pop,
-            self.econ,
-            self.intervention.modifiers,
-            base_config
+        total_medicare_savings = (
+            self.cognitive_results.get('alzheimers_savings', 0) +
+            self.kidney_results.get('medicare_savings', 0)
         )
         
-        physical_benefits = calculate_physical_benefits(
-            self.intervention.physical,
-            self.pop,
-            self.econ,
-            self.intervention.modifiers,
-            base_config
-        )
-        
-        longevity_benefits = calculate_longevity_benefits(
-            self.intervention.longevity,
-            self.pop,
-            self.econ,
-            self.intervention.modifiers,
-            base_config
-        )
-        
-        healthcare_benefits = calculate_healthcare_benefits(
-            self.intervention.healthcare,
-            self.pop,
-            self.econ,
-            self.intervention.modifiers,
-            base_config
-        )
-        
-        # Combine all benefits
-        total_gdp = (
-            (cognitive_benefits.gdp_impact if cognitive_benefits else 0) +
-            (longevity_benefits.gdp_impact if longevity_benefits else 0)
-        )
-        
-        total_healthcare = (
-            (physical_benefits.healthcare_savings if physical_benefits else 0) +
-            (healthcare_benefits.hospital_savings if healthcare_benefits else 0)
-        )
-        
-        total_medicare = (
-            (cognitive_benefits.medicare_savings if cognitive_benefits else 0) +
-            (kidney_benefits.medicare_savings if kidney_benefits else 0) +
-            (healthcare_benefits.medicare_savings if healthcare_benefits else 0)
+        total_gdp_impact = (
+            self.cognitive_results.get('gdp_impact', 0) +
+            self.longevity_results.get('gdp_impact', 0)
         )
         
         total_qalys = (
-            (cognitive_benefits.qaly_improvement if cognitive_benefits else 0) +
-            (kidney_benefits.qaly_improvement if kidney_benefits else 0) +
-            (physical_benefits.qaly_improvement if physical_benefits else 0) +
-            (longevity_benefits.qaly_improvement if longevity_benefits else 0) +
-            (healthcare_benefits.qaly_improvement if healthcare_benefits else 0)
+            self.physical_results.get('qalys_gained', 0) +
+            self.cognitive_results.get('qalys_gained', 0) +
+            self.kidney_results.get('qalys_gained', 0) +
+            self.healthcare_results.get('qalys_gained', 0)
         )
         
-        # Create report with validated data model
-        return Report(
-            metrics=ReportMetrics(
-                annual_healthcare_savings=total_healthcare,
-                total_gdp_impact=total_gdp,
-                annual_medicare_savings=total_medicare,
-                total_qalys=total_qalys
-            ),
-            benefits=DetailedBenefits(
-                cognitive_benefits=cognitive_benefits.model_dump() if cognitive_benefits else None,
-                kidney_benefits=kidney_benefits.model_dump() if kidney_benefits else None,
-                physical_benefits=physical_benefits.model_dump() if physical_benefits else None,
-                longevity_benefits=longevity_benefits.model_dump() if longevity_benefits else None,
-                healthcare_benefits=healthcare_benefits.model_dump() if healthcare_benefits else None,
-                total_benefits=BenefitMetrics(
-                    gdp_impact=total_gdp,
-                    healthcare_savings=total_healthcare,
-                    medicare_savings=total_medicare,
-                    qaly_improvement=total_qalys
-                ).model_dump()
-            ),
-            validation_warnings=""  # Will be set later after validation
+        # Create report metrics
+        metrics = ReportMetrics(
+            annual_healthcare_savings=total_healthcare_savings,
+            annual_medicare_savings=total_medicare_savings,
+            total_gdp_impact=total_gdp_impact,
+            total_qalys=total_qalys
         )
-
-    def apply_discount_rate(self, value: float, years: float) -> float:
-        """Apply discount rate to a value over a number of years."""
-        return value / ((1 + self.econ.discount_rate) ** years)
         
-    def validate_assumptions(self) -> None:
-        """Validate model assumptions."""
-        # Validate population assumptions
-        if self.pop.target_population > self.pop.total_population:
-            raise ValueError("Target population cannot exceed total population")
-            
-        # Validate economic assumptions
-        if self.econ.annual_healthcare_cost <= 0:
-            raise ValueError("Annual healthcare cost must be positive")
-        if self.econ.annual_productivity <= 0:
-            raise ValueError("Annual productivity must be positive")
-            
-        # Validate intervention assumptions
-        if self.intervention.longevity.lifespan_increase_years < 0:
-            raise ValueError("Lifespan increase cannot be negative")
-        if self.intervention.healthcare.hospital_visit_reduction_percent < 0:
-            raise ValueError("Hospital visit reduction cannot be negative") 
+        return Report(metrics=metrics) 

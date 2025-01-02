@@ -82,12 +82,25 @@ class LongevityParams(BaseModel):
 class HealthcareParams(BaseModel):
     """Parameters for healthcare utilization effects."""
     hospital_visit_reduction_percent: float = Field(description="Hospital visit reduction percentage")
+    annual_hospital_visits: int = Field(description="Annual hospital visits")
+    annual_alzheimers_cost: float = Field(description="Annual Alzheimer's cost")
+    annual_ckd_cost: float = Field(description="Annual CKD cost")
+    cost_per_hospital_visit: float = Field(description="Cost per hospital visit")
+    savings_per_lb_muscle: float = Field(description="Healthcare savings per pound of muscle")
+    savings_per_lb_fat: float = Field(description="Healthcare savings per pound of fat loss")
     
     @validator('hospital_visit_reduction_percent')
     def validate_reduction(cls, v: float) -> float:
         """Validate hospital visit reduction."""
         if not 0 <= v <= 50:
             raise ValueError("Hospital visit reduction must be between 0 and 50%")
+        return v
+        
+    @validator('annual_hospital_visits', 'annual_alzheimers_cost', 'annual_ckd_cost', 'cost_per_hospital_visit')
+    def validate_positive(cls, v: float) -> float:
+        """Validate positive values."""
+        if v <= 0:
+            raise ValueError("Healthcare costs must be positive")
         return v
 
 class ImpactModifiers(BaseModel):
@@ -150,12 +163,47 @@ class BaseInterventionParams(BaseModel):
     @classmethod
     def from_config(cls, intervention_config: Dict, base_config: Dict) -> 'BaseInterventionParams':
         """Create parameters from configuration."""
+        effects = intervention_config.get('default_effects', {})
+        if not effects:
+            raise ValueError("No effects found in intervention config")
+        
         # Extract parameters from config
-        cognitive = CognitiveParams(**intervention_config['cognitive']) if 'cognitive' in intervention_config else None
-        kidney = KidneyParams(**intervention_config['kidney']) if 'kidney' in intervention_config else None
-        physical = PhysicalParams(**intervention_config['physical']) if 'physical' in intervention_config else None
-        longevity = LongevityParams(**intervention_config['longevity'])
-        healthcare = HealthcareParams(**intervention_config['healthcare'])
+        cognitive = None
+        if effects.get('cognitive'):
+            cognitive = CognitiveParams(
+                iq_increase=effects['cognitive']['iq_increase'],
+                alzheimers_reduction=effects['cognitive']['alzheimers_reduction']
+            )
+        
+        kidney = None
+        if effects.get('kidney'):
+            kidney = KidneyParams(
+                egfr_improvement=effects['kidney']['egfr_improvement'],
+                ckd_progression_reduction=effects['kidney']['ckd_progression_reduction']
+            )
+        
+        physical = None
+        if effects.get('physical'):
+            physical = PhysicalParams(
+                muscle_mass_change_lb=effects['physical']['muscle_mass_change'],
+                fat_mass_change_lb=effects['physical']['fat_mass_change']
+            )
+        
+        # Convert longevity parameters
+        if not effects.get('longevity'):
+            raise ValueError("Longevity effects are required")
+        longevity = LongevityParams(
+            lifespan_increase_years=effects['longevity']['lifespan_increase'] * 79.1 / 100,  # Convert % to years
+            healthspan_improvement_percent=effects['longevity']['healthspan_improvement']
+        )
+        
+        # Convert healthcare parameters
+        if not effects.get('healthcare'):
+            raise ValueError("Healthcare effects are required")
+        healthcare_params = base_config['healthcare'].copy()
+        healthcare_params['hospital_visit_reduction_percent'] = effects['healthcare']['hospital_visit_reduction']
+        healthcare = HealthcareParams(**healthcare_params)
+        
         modifiers = ImpactModifiers(**base_config['impact_modifiers'])
         
         return cls(

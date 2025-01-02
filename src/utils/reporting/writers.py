@@ -1,16 +1,18 @@
 """Report section writers."""
 
 from datetime import datetime
-from typing import TextIO, Dict
+from typing import TextIO, Dict, Any, TYPE_CHECKING
 
-from src.models.base_model import BaseImpactModel
-from src.models.report import Report
+if TYPE_CHECKING:
+    from src.models.base_model import BaseImpactModel
+    from src.models.report import Report
+
 from .formatters import format_currency, format_percentage, format_number, format_equation
 
 def write_executive_summary(
     f: TextIO,
-    intervention_config: dict,
-    report: Report
+    intervention_config: Dict[str, Any],
+    report: 'Report'
 ) -> None:
     """Write executive summary section."""
     f.write("## Executive Summary\n\n")
@@ -40,7 +42,7 @@ def write_study_design(f: TextIO) -> None:
 
 def write_intervention_analysis(
     f: TextIO,
-    model: BaseImpactModel
+    model: 'BaseImpactModel'
 ) -> None:
     """Write intervention analysis section."""
     f.write("## Intervention Analysis\n\n")
@@ -48,45 +50,58 @@ def write_intervention_analysis(
     # Physical Impact
     if model.intervention.physical:
         f.write("### Physical Impact Pathway\n")
-        f.write(f"- Muscle Mass Change: {model.intervention.physical.muscle_mass_change_lb:+.1f} lb\n")
-        f.write(f"- Fat Mass Change: {model.intervention.physical.fat_mass_change_lb:+.1f} lb\n")
-        f.write("These changes affect:\n")
-        f.write("1. Healthcare utilization through improved mobility and reduced fall risk\n")
-        f.write("2. Quality of life through enhanced physical capability\n")
-        f.write("3. Healthcare costs through metabolic health improvements\n\n")
+        model.physical_calculator.write_calculations(f, model.intervention.physical.dict(), model.physical_results)
+        f.write("\n")
     
     # Cognitive Impact
     if model.intervention.cognitive:
         f.write("### Cognitive Impact Pathway\n")
-        f.write(f"- IQ Increase: +{model.intervention.cognitive.iq_increase:.1f} points\n")
-        f.write(f"- Alzheimer's Progression Reduction: {model.intervention.cognitive.alzheimers_reduction:.1f}%\n")
-        f.write("These improvements lead to:\n")
-        f.write("1. Enhanced workforce productivity\n")
-        f.write("2. Reduced cognitive decline costs\n")
-        f.write("3. Improved quality of life\n\n")
+        model.cognitive_calculator.write_calculations(f, model.intervention.cognitive.dict(), model.cognitive_results)
+        f.write("\n")
     
-    # Kidney Function Impact
+    # Kidney Impact
     if model.intervention.kidney:
         f.write("### Kidney Function Impact Pathway\n")
-        f.write(f"- eGFR Improvement: +{model.intervention.kidney.egfr_improvement:.1f} mL/min/1.73m²\n")
-        f.write(f"- CKD Progression Reduction: {model.intervention.kidney.ckd_progression_reduction:.1f}%\n")
-        f.write("These improvements result in:\n")
-        f.write("1. Reduced Medicare costs\n")
-        f.write("2. Improved quality of life\n")
-        f.write("3. Extended healthspan\n\n")
+        model.kidney_calculator.write_calculations(f, model.intervention.kidney.dict(), model.kidney_results)
+        f.write("\n")
     
-    # Longevity Impact
-    f.write("### Longevity Impact Pathway\n")
-    f.write(f"- Lifespan Increase: {model.intervention.longevity.lifespan_increase_years:.2f} years\n")
-    f.write(f"- Health Quality Improvement: {model.intervention.longevity.healthspan_improvement_percent:.1f}%\n")
-    f.write("These improvements contribute to:\n")
-    f.write("1. Extended productive years\n")
-    f.write("2. Increased lifetime earnings\n")
-    f.write("3. Enhanced quality of life\n\n")
+    # Healthcare Impact
+    f.write("### Healthcare Utilization Impact\n")
+    model.healthcare_calculator.write_calculations(f, model.intervention.healthcare.dict(), model.healthcare_results)
+    f.write("\n")
+
+def write_economic_calculations(
+    f: TextIO,
+    model: 'BaseImpactModel',
+    report: 'Report'
+) -> None:
+    """Write economic calculations section."""
+    f.write("## Economic Impact Calculations\n\n")
+    
+    # Total Healthcare System Savings
+    f.write("### Total Healthcare System Savings\n")
+    f.write("Sum of savings from all impact pathways:\n\n")
+    equation = "Total Savings = Physical_Savings + Hospital_Savings + Medicare_Savings"
+    f.write(format_equation(equation))
+    f.write(f"\nAnnual healthcare system savings: {format_currency(report.metrics.annual_healthcare_savings)}\n\n")
+    
+    # Total GDP Impact
+    f.write("### Total GDP Impact\n")
+    f.write("Economic gains from improved health and productivity:\n\n")
+    equation = "GDP Impact = Cognitive_Impact + Longevity_Impact"
+    f.write(format_equation(equation))
+    f.write(f"\nTotal GDP impact: {format_currency(report.metrics.total_gdp_impact)}\n\n")
+    
+    # Total QALYs
+    f.write("### Quality-Adjusted Life Years\n")
+    f.write("Total health improvements across all pathways:\n\n")
+    equation = "Total QALYs = Physical_QALYs + Cognitive_QALYs + Kidney_QALYs + Healthcare_QALYs"
+    f.write(format_equation(equation))
+    f.write(f"\nTotal QALYs gained: {format_number(report.metrics.total_qalys)}\n\n")
 
 def write_population_impact(
     f: TextIO,
-    model: BaseImpactModel
+    model: 'BaseImpactModel'
 ) -> None:
     """Write population impact section."""
     f.write("## Population Impact\n\n")
@@ -118,7 +133,7 @@ def write_uncertainty_analysis(f: TextIO) -> None:
 
 def write_conclusions(
     f: TextIO,
-    model: BaseImpactModel,
+    model: 'BaseImpactModel',
     report: dict
 ) -> None:
     """Write conclusions section."""

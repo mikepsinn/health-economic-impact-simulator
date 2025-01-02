@@ -10,8 +10,8 @@ from src.models.config import (
 
 # Population parameters
 population = PopulationConfig(
-    total=331900000,  # Total US population
-    target=165950000,  # Population that could benefit
+    total_population=331900000,  # Total US population
+    target_population=165950000,  # Population that could benefit
     medicare_beneficiaries=61733400,  # Medicare enrollment
     workforce_fraction=0.63  # Labor force participation rate
 )
@@ -29,7 +29,8 @@ healthcare = HealthcareConfig(
     annual_alzheimers_cost=305000000000.0,  # Total Alzheimer's cost
     annual_ckd_cost=87000000000.0,  # Total CKD cost
     savings_per_lb_muscle=12.0,  # Healthcare savings per pound muscle gain
-    savings_per_lb_fat=8.0  # Healthcare savings per pound fat loss
+    savings_per_lb_fat=8.0,  # Healthcare savings per pound fat loss
+    cost_per_hospital_visit=12500.0 * 331900000 / 36500000  # Total healthcare cost / visits
 )
 
 # Global impact modifiers
