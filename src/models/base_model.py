@@ -46,13 +46,24 @@ class BaseEconomicParams:
 @dataclass
 class BaseInterventionParams:
     """Base parameters for intervention effects."""
-    muscle_gain_lb: float
-    fat_loss_lb: float
+    muscle_mass_change_lb: float  # Positive = gain, negative = loss
+    fat_mass_change_lb: float    # Positive = gain, negative = loss
     lifespan_increase_years: float
     healthspan_improvement_percent: float
     savings_per_lb: float = 10.0  # Default $10 savings per pound improvement
     hospital_visit_reduction_percent: float = 15.0  # Default 15% reduction
     cost_per_hospital_visit: float = 12000.0  # Default $12,000 per visit
+
+    def __post_init__(self):
+        """Validate parameter values."""
+        if self.muscle_mass_change_lb < -10 or self.muscle_mass_change_lb > 10:
+            raise ValueError("Muscle mass change must be between -10 and +10 lbs")
+        if self.fat_mass_change_lb < -30 or self.fat_mass_change_lb > 10:
+            raise ValueError("Fat mass change must be between -30 and +10 lbs")
+        if self.lifespan_increase_years < 0:
+            raise ValueError("Lifespan increase must be positive")
+        if self.healthspan_improvement_percent < 0 or self.healthspan_improvement_percent > 100:
+            raise ValueError("Health improvement must be between 0 and 100 percent")
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], base_params: Dict[str, Any]) -> 'BaseInterventionParams':
@@ -61,8 +72,8 @@ class BaseInterventionParams:
         modifiers = config['impact_modifiers']
         
         return cls(
-            muscle_gain_lb=abs(effects['physical']['muscle_mass_change']),
-            fat_loss_lb=abs(effects['physical']['fat_mass_change']),
+            muscle_mass_change_lb=effects['physical']['muscle_mass_change'],
+            fat_mass_change_lb=effects['physical']['fat_mass_change'],
             lifespan_increase_years=base_params['health_baselines']['average_lifespan'] * 
                                   (effects['longevity']['lifespan_increase'] / 100.0),
             healthspan_improvement_percent=modifiers['health_quality'] * 100,
@@ -92,13 +103,13 @@ class BaseImpactModel(ABC):
             float: Annual healthcare savings in dollars
         
         Formula:
-            savings = target_population * (muscle_gain + fat_loss) * savings_per_lb +
+            savings = target_population * (muscle_mass_change + fat_mass_change) * savings_per_lb +
                      target_population * baseline_hospital_visits * hospital_reduction * cost_per_visit
         """
         # Savings from body composition changes
         composition_savings = (
             self.pop.target_population * 
-            (self.intervention.muscle_gain_lb + self.intervention.fat_loss_lb) * 
+            (self.intervention.muscle_mass_change_lb + self.intervention.fat_mass_change_lb) * 
             self.intervention.savings_per_lb
         )
         
@@ -193,8 +204,8 @@ class BaseImpactModel(ABC):
             Dict mapping parameter names to [min, max, step] lists
         """
         return {
-            'muscle_gain_lb': [0.0, 5.0, 0.5],
-            'fat_loss_lb': [0.0, 5.0, 0.5],
+            'muscle_mass_change_lb': [0.0, 5.0, 0.5],
+            'fat_mass_change_lb': [0.0, 5.0, 0.5],
             'lifespan_increase_years': [0.0, 3.0, 0.1],
             'healthspan_improvement_percent': [0.0, 10.0, 1.0],
             'hospital_visit_reduction_percent': [0.0, 30.0, 5.0]
@@ -208,8 +219,8 @@ class BaseImpactModel(ABC):
             Dict mapping parameter names to their current values
         """
         return {
-            'muscle_gain_lb': self.intervention.muscle_gain_lb,
-            'fat_loss_lb': self.intervention.fat_loss_lb,
+            'muscle_mass_change_lb': self.intervention.muscle_mass_change_lb,
+            'fat_mass_change_lb': self.intervention.fat_mass_change_lb,
             'lifespan_increase_years': self.intervention.lifespan_increase_years,
             'healthspan_improvement_percent': self.intervention.healthspan_improvement_percent,
             'hospital_visit_reduction_percent': self.intervention.hospital_visit_reduction_percent
@@ -229,8 +240,8 @@ class BaseImpactModel(ABC):
         orig_values = self.get_current_params()
         
         # Update parameters
-        self.intervention.muscle_gain_lb = params['muscle_gain_lb']
-        self.intervention.fat_loss_lb = params['fat_loss_lb']
+        self.intervention.muscle_mass_change_lb = params['muscle_mass_change_lb']
+        self.intervention.fat_mass_change_lb = params['fat_mass_change_lb']
         self.intervention.lifespan_increase_years = params['lifespan_increase_years']
         self.intervention.healthspan_improvement_percent = params['healthspan_improvement_percent']
         self.intervention.hospital_visit_reduction_percent = params['hospital_visit_reduction_percent']
@@ -244,32 +255,45 @@ class BaseImpactModel(ABC):
         }
         
         # Restore original values
-        self.intervention.muscle_gain_lb = orig_values['muscle_gain_lb']
-        self.intervention.fat_loss_lb = orig_values['fat_loss_lb']
+        self.intervention.muscle_mass_change_lb = orig_values['muscle_mass_change_lb']
+        self.intervention.fat_mass_change_lb = orig_values['fat_mass_change_lb']
         self.intervention.lifespan_increase_years = orig_values['lifespan_increase_years']
         self.intervention.healthspan_improvement_percent = orig_values['healthspan_improvement_percent']
         self.intervention.hospital_visit_reduction_percent = orig_values['hospital_visit_reduction_percent']
         
         return impacts
 
-    def validate_assumptions(self) -> bool:
+    def validate_assumptions(self) -> None:
         """
-        Validate that all model assumptions are reasonable.
-        
-        Returns:
-            bool: True if all assumptions are valid
+        Validate model assumptions.
         
         Raises:
             ValueError: If any assumptions are invalid
         """
-        if self.intervention.muscle_gain_lb < 0:
-            raise ValueError("Muscle gain cannot be negative")
-        if self.intervention.fat_loss_lb < 0:
-            raise ValueError("Fat loss cannot be negative")
+        # Population assumptions
+        if self.pop.target_population > self.pop.total_population:
+            raise ValueError("Target population cannot exceed total population")
+        if self.pop.medicare_beneficiaries > self.pop.total_population:
+            raise ValueError("Medicare beneficiaries cannot exceed total population")
+        if not 0 <= self.pop.workforce_fraction <= 1:
+            raise ValueError("Workforce fraction must be between 0 and 1")
+            
+        # Economic assumptions
+        if self.econ.annual_healthcare_cost <= 0:
+            raise ValueError("Healthcare cost must be positive")
+        if self.econ.annual_productivity <= 0:
+            raise ValueError("Productivity must be positive")
+        if not 0 <= self.econ.discount_rate <= 0.2:
+            raise ValueError("Discount rate must be between 0 and 20%")
+            
+        # Intervention assumptions
+        if self.intervention.muscle_mass_change_lb < -10 or self.intervention.muscle_mass_change_lb > 10:
+            raise ValueError("Muscle mass change must be between -10 and +10 lbs")
+        if self.intervention.fat_mass_change_lb < -30 or self.intervention.fat_mass_change_lb > 10:
+            raise ValueError("Fat mass change must be between -30 and +10 lbs")
         if self.intervention.lifespan_increase_years < 0:
-            raise ValueError("Lifespan increase cannot be negative")
+            raise ValueError("Lifespan increase must be positive")
         if not 0 <= self.intervention.healthspan_improvement_percent <= 100:
-            raise ValueError("Health improvement must be between 0 and 100 percent")
+            raise ValueError("Health improvement must be between 0 and 100%")
         if not 0 <= self.intervention.hospital_visit_reduction_percent <= 100:
-            raise ValueError("Hospital visit reduction must be between 0 and 100 percent")
-        return True 
+            raise ValueError("Hospital visit reduction must be between 0 and 100%") 

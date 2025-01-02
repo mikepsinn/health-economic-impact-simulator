@@ -1,18 +1,19 @@
 population:
-  total_us: 331900000  # Total US population
-  over_60: 73000000   # Population over 60
-  adult: 258300000    # Adult population (18+)
+  total: 331900000  # Total US population
+  target: 258300000  # Adult population (18+)
+  medicare_beneficiaries: 73000000  # Population over 60
+  workforce_fraction: 0.5  # Fraction of population in workforce
 
 economics:
-  medicare_per_capita: 12500  # Annual Medicare spending per beneficiary
-  gdp_per_capita: 65000      # US GDP per capita
+  annual_healthcare_cost: 12500  # Annual Medicare spending per beneficiary
+  annual_productivity: 65000  # US GDP per capita
+  discount_rate: 0.03  # Annual discount rate
   alzheimers_annual_cost: 355000000000  # Total US annual cost
-  ckd_annual_cost: 87000000000         # Total US annual cost
+  ckd_annual_cost: 87000000000  # Total US annual cost
 
 health_baselines:
   hospital_visits_per_year: 0.125  # Average hospital visits per person
-  average_lifespan: 79.1          # Years
+  average_lifespan: 79.1  # Years
   medicare_enrollment_rate: 0.186  # Percentage of population on Medicare
-  alzheimers_rate: 0.101         # Rate in over 60 population
-  ckd_rate: 0.15                 # Rate in adult population
-  average_iq: 100.0              # Population mean IQ 
+  alzheimers_rate: 0.101  # Rate in over 60 population
+  ckd_rate: 0.15  # Rate in adult population 
