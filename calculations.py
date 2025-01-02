@@ -1,8 +1,5 @@
-"""Core calculation functions for the health economic impact simulator."""
-
-import pandas as pd
 from typing import Dict, Any
-from ..config.loader import load_base_parameters
+import pandas as pd
 
 def format_large_number(num: float) -> str:
     """Format large numbers into B/M format."""

@@ -1,10 +1,8 @@
-"""Visualization functions for the health economic impact simulator."""
-
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 from typing import Dict, Any
-from ..core.calculations import calculate_impacts, format_large_number
+from calculations import calculate_impacts, format_large_number
 
 def plot_medicare_breakdown(breakdown_df: pd.DataFrame) -> go.Figure:
     """Create a bar chart showing Medicare savings by category."""
