@@ -1,6 +1,5 @@
 """Calculator for cognitive benefits."""
 
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 from ..parameters import (
@@ -9,13 +8,7 @@ from ..parameters import (
     BaseEconomicParams,
     ImpactModifiers
 )
-
-@dataclass
-class CognitiveBenefits:
-    """Benefits from cognitive improvements."""
-    gdp_impact: float
-    medicare_savings: float
-    qaly_improvement: float
+from ..benefits import CognitiveBenefits
 
 def calculate_cognitive_benefits(
     params: Optional[CognitiveParams],
@@ -29,36 +22,35 @@ def calculate_cognitive_benefits(
         return None
         
     # Calculate GDP impact from IQ increase
+    # Each IQ point increases productivity by the modifier percentage
     gdp_impact = (
         params.iq_increase *
+        modifiers.iq_to_gdp *
         pop.target_population *
-        econ.annual_productivity *
-        modifiers.iq_to_gdp
+        pop.workforce_fraction *
+        econ.annual_productivity
     )
     
-    # Calculate Medicare savings from reduced Alzheimer's
-    alzheimers_baseline_cost = base_config['healthcare']['annual_alzheimers_cost']
+    # Calculate Medicare savings from reduced Alzheimer's progression
     medicare_savings = (
-        alzheimers_baseline_cost *
         (params.alzheimers_reduction / 100.0) *
-        pop.medicare_beneficiaries *
-        modifiers.alzheimers_to_medicare
+        modifiers.alzheimers_to_medicare *
+        base_config['healthcare']['annual_alzheimers_cost']
     )
     
     # Calculate QALY improvement
-    # Assume each IQ point improves quality of life by 0.01
-    # and Alzheimer's reduction improves quality of life proportionally
+    # Each IQ point improves quality of life by 1%
     qaly_iq = params.iq_increase * 0.01 * pop.target_population
-    qaly_alzheimers = (
-        params.alzheimers_reduction / 100.0 *
-        0.2 *  # Assume Alzheimer's reduces quality of life by 0.2
-        pop.medicare_beneficiaries
-    )
     
-    total_qalys = (qaly_iq + qaly_alzheimers) * modifiers.health_quality
+    # Reduced Alzheimer's progression improves quality of life by 20%
+    qaly_alzheimers = (
+        pop.medicare_beneficiaries *
+        (params.alzheimers_reduction / 100.0) *
+        0.2
+    )
     
     return CognitiveBenefits(
         gdp_impact=gdp_impact,
         medicare_savings=medicare_savings,
-        qaly_improvement=total_qalys
+        qaly_improvement=qaly_iq + qaly_alzheimers
     ) 

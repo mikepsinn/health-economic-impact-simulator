@@ -1,6 +1,5 @@
 """Calculator for longevity benefits."""
 
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 from ..parameters import (
@@ -9,46 +8,38 @@ from ..parameters import (
     BaseEconomicParams,
     ImpactModifiers
 )
-
-@dataclass
-class LongevityBenefits:
-    """Benefits from increased lifespan and healthspan."""
-    gdp_impact: float
-    qaly_improvement: float
+from ..benefits import LongevityBenefits
 
 def calculate_longevity_benefits(
-    params: LongevityParams,
+    params: Optional[LongevityParams],
     pop: BasePopulationParams,
     econ: BaseEconomicParams,
     modifiers: ImpactModifiers,
     base_config: Dict
-) -> LongevityBenefits:
-    """Calculate benefits from increased lifespan and healthspan."""
+) -> Optional[LongevityBenefits]:
+    """Calculate benefits from increased lifespan."""
+    if not params:
+        return None
+        
     # Calculate GDP impact from increased productive years
-    # Assume working years increase proportionally with lifespan
-    additional_working_years = (
-        params.lifespan_increase_percent / 100.0 *
-        pop.workforce_fraction *
-        pop.target_population
-    )
-    
+    # Assume productivity scales with lifespan increase and health quality
     gdp_impact = (
-        additional_working_years *
-        econ.annual_productivity *
-        modifiers.lifespan_to_gdp
+        params.lifespan_increase_years *
+        modifiers.lifespan_to_gdp *
+        pop.target_population *
+        pop.workforce_fraction *
+        econ.annual_productivity
     )
     
-    # Calculate QALY improvement from increased lifespan and health quality
-    base_life_expectancy = 79.1  # years
-    additional_years = base_life_expectancy * (params.lifespan_increase_percent / 100.0)
-    
-    qaly_improvement = (
+    # Calculate QALY improvement from increased lifespan
+    # Scale by health quality improvement
+    qalys = (
+        params.lifespan_increase_years *
         pop.target_population *
-        additional_years *
-        (params.healthspan_improvement_percent / 100.0)
+        (1 + params.healthspan_improvement_percent / 100.0)
     )
     
     return LongevityBenefits(
         gdp_impact=gdp_impact,
-        qaly_improvement=qaly_improvement
+        qaly_improvement=qalys
     ) 

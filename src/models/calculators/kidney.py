@@ -1,6 +1,5 @@
 """Calculator for kidney function benefits."""
 
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 from ..parameters import (
@@ -9,12 +8,7 @@ from ..parameters import (
     BaseEconomicParams,
     ImpactModifiers
 )
-
-@dataclass
-class KidneyBenefits:
-    """Benefits from improved kidney function."""
-    medicare_savings: float
-    qaly_improvement: float
+from ..benefits import KidneyBenefits
 
 def calculate_kidney_benefits(
     params: Optional[KidneyParams],
@@ -23,32 +17,29 @@ def calculate_kidney_benefits(
     modifiers: ImpactModifiers,
     base_config: Dict
 ) -> Optional[KidneyBenefits]:
-    """Calculate benefits from improved kidney function."""
+    """Calculate benefits from kidney function improvements."""
     if not params:
         return None
         
-    # Calculate Medicare savings from improved kidney function
-    ckd_baseline_cost = base_config['healthcare']['annual_ckd_cost']
+    # Calculate Medicare savings from reduced CKD progression
     medicare_savings = (
-        ckd_baseline_cost *
         (params.ckd_progression_reduction / 100.0) *
-        pop.medicare_beneficiaries *
-        modifiers.kidney_to_medicare
+        modifiers.kidney_to_medicare *
+        base_config['healthcare']['annual_ckd_cost']
     )
     
     # Calculate QALY improvement
-    # Assume each mL/min/1.73m² of eGFR improvement increases quality of life by 0.01
-    # and CKD progression reduction improves quality of life proportionally
+    # Each mL/min/1.73m² of eGFR improves quality of life by 1%
     qaly_egfr = params.egfr_improvement * 0.01 * pop.target_population
-    qaly_ckd = (
-        params.ckd_progression_reduction / 100.0 *
-        0.3 *  # Assume CKD reduces quality of life by 0.3
-        pop.medicare_beneficiaries
-    )
     
-    total_qalys = (qaly_egfr + qaly_ckd) * modifiers.health_quality
+    # Reduced CKD progression improves quality of life by 30%
+    qaly_ckd = (
+        pop.medicare_beneficiaries *
+        (params.ckd_progression_reduction / 100.0) *
+        0.3
+    )
     
     return KidneyBenefits(
         medicare_savings=medicare_savings,
-        qaly_improvement=total_qalys
+        qaly_improvement=qaly_egfr + qaly_ckd
     ) 

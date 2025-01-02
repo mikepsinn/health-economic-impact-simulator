@@ -1,6 +1,5 @@
 """Calculator for healthcare utilization benefits."""
 
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 from ..parameters import (
@@ -9,45 +8,39 @@ from ..parameters import (
     BaseEconomicParams,
     ImpactModifiers
 )
-
-@dataclass
-class HealthcareBenefits:
-    """Benefits from reduced healthcare utilization."""
-    hospital_savings: float
-    medicare_savings: float
-    qaly_improvement: float
+from ..benefits import HealthcareBenefits
 
 def calculate_healthcare_benefits(
-    params: HealthcareParams,
+    params: Optional[HealthcareParams],
     pop: BasePopulationParams,
     econ: BaseEconomicParams,
     modifiers: ImpactModifiers,
     base_config: Dict
-) -> HealthcareBenefits:
+) -> Optional[HealthcareBenefits]:
     """Calculate benefits from reduced healthcare utilization."""
-    # Calculate hospital visit savings
-    annual_visits = base_config['healthcare']['annual_hospital_visits']
-    visits_reduced = (
-        annual_visits *
-        (params.hospital_visit_reduction_percent / 100.0) *
-        pop.target_population
-    )
+    if not params:
+        return None
+        
+    # Calculate savings from reduced hospital visits
+    total_visits = base_config['healthcare']['annual_hospital_visits']
+    visits_reduced = total_visits * (params.hospital_visit_reduction_percent / 100.0)
+    cost_per_visit = econ.annual_healthcare_cost * pop.total_population / total_visits
     
-    hospital_savings = visits_reduced * params.cost_per_hospital_visit
+    hospital_savings = visits_reduced * cost_per_visit
     
-    # Calculate Medicare savings (assume 40% of hospital costs are Medicare)
-    medicare_savings = hospital_savings * 0.4
+    # Calculate Medicare portion of savings
+    medicare_savings = hospital_savings * (pop.medicare_beneficiaries / pop.total_population)
     
     # Calculate QALY improvement
-    # Assume each avoided hospital visit improves quality of life by 0.1
-    qaly_improvement = (
-        visits_reduced *
-        0.1 *
-        modifiers.health_quality
+    # Each avoided hospital visit improves quality of life by 10%
+    qalys = (
+        pop.target_population *
+        (params.hospital_visit_reduction_percent / 100.0) *
+        0.1
     )
     
     return HealthcareBenefits(
         hospital_savings=hospital_savings,
         medicare_savings=medicare_savings,
-        qaly_improvement=qaly_improvement
+        qaly_improvement=qalys
     ) 

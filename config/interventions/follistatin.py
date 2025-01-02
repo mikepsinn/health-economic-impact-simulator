@@ -1,37 +1,31 @@
 """Follistatin intervention configuration."""
 
-from src.models.config import (
-    InterventionConfig,
-    InterventionEffects,
-    PhysicalEffects,
-    LongevityEffects,
-    HealthcareEffects,
-    BiomarkerEffects
-)
+from pydantic import BaseModel, Field
+from typing import List
 
-config = InterventionConfig(
-    name="Follistatin",
-    description="Muscle growth and fat reduction therapeutic protein",
-    default_effects=InterventionEffects(
-        physical=PhysicalEffects(
-            muscle_mass_change=2.0,  # lbs
-            fat_mass_change=-2.0     # lbs
-        ),
-        longevity=LongevityEffects(
-            lifespan_increase=2.5,   # percentage
-            healthspan_improvement=80.0  # percentage of lifespan increase that is healthy
-        ),
-        healthcare=HealthcareEffects(
-            hospital_visit_reduction=15.0  # percentage
-        ),
-        biomarkers=BiomarkerEffects(
-            egfr_change=5.0,         # mL/min/1.73m²
-            cystatin_c_change=-0.2   # mg/L
-        )
-    ),
-    references=[
+class FollistatinConfig(BaseModel):
+    """Configuration for Follistatin intervention."""
+    name: str = "Follistatin"
+    description: str = "Muscle growth and fat reduction therapeutic protein"
+    
+    physical: dict = {
+        "muscle_mass_change_lb": 2.0,
+        "fat_mass_change_lb": -2.0
+    }
+    
+    longevity: dict = {
+        "lifespan_increase_years": 1.98,  # 2.5% of 79.1 years
+        "healthspan_improvement_percent": 80.0
+    }
+    
+    healthcare: dict = {
+        "hospital_visit_reduction_percent": 15.0
+    }
+    
+    references: List[str] = [
         "Smith et al. (2023) Follistatin effects on muscle mass",
         "Jones et al. (2023) Follistatin and metabolic health",
         "Wilson et al. (2022) Follistatin longevity studies"
     ]
-) 
+
+config = FollistatinConfig() 

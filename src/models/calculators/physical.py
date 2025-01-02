@@ -1,6 +1,5 @@
 """Calculator for physical composition benefits."""
 
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 from ..parameters import (
@@ -9,12 +8,7 @@ from ..parameters import (
     BaseEconomicParams,
     ImpactModifiers
 )
-
-@dataclass
-class PhysicalBenefits:
-    """Benefits from physical composition changes."""
-    healthcare_savings: float
-    qaly_improvement: float
+from ..benefits import PhysicalBenefits
 
 def calculate_physical_benefits(
     params: Optional[PhysicalParams],
@@ -48,9 +42,7 @@ def calculate_physical_benefits(
     qaly_muscle = params.muscle_mass_change_lb * 0.001 * pop.target_population
     qaly_fat = abs(params.fat_mass_change_lb) * 0.0005 * pop.target_population
     
-    total_qalys = (qaly_muscle + qaly_fat) * modifiers.health_quality
-    
     return PhysicalBenefits(
         healthcare_savings=total_savings,
-        qaly_improvement=total_qalys
+        qaly_improvement=qaly_muscle + qaly_fat
     ) 
