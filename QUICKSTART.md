@@ -10,7 +10,7 @@
 
 1. **Clone the repository**
    ```powershell
-   git clone [repository-url]
+   git clone https://github.com/mikepsinn/health-economic-impact-simulator
    cd health-economic-impact-simulator
    ```
 
@@ -23,16 +23,20 @@
 
 3. **Install dependencies**
    ```powershell
-   pip install -r requirements.txt
+   # Using python -m pip ensures we're using the correct pip installation
+   python -m pip install -r requirements.txt
    ```
 
 ## Running the Application
 
 1. **Start the Streamlit app**
    ```powershell
-   streamlit run app.py
+   # Using python -m streamlit ensures we're using the correct Python environment
+   python -m streamlit run app.py
    ```
    The app will open in your default web browser at http://localhost:8501
+
+   If the app doesn't open automatically, manually visit http://localhost:8501 in your browser.
 
 2. **Using the Interface**
    - Select an intervention from the sidebar dropdown

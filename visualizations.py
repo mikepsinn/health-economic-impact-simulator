@@ -23,13 +23,10 @@ def plot_medicare_breakdown(breakdown_df: pd.DataFrame) -> go.Figure:
     
     fig.update_layout(
         showlegend=False,
-        xaxis_tickformat='$,.0f',
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=50),
-        title_x=0.5,
-        title_y=0.98,
+        xaxis_title='Annual Medicare Savings ($)',
         yaxis_title=None
     )
+    
     return fig
 
 def plot_population_comparison(intervention: Dict[Any, Any], base_params: Dict[Any, Any]) -> go.Figure:
