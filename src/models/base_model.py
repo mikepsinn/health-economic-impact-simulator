@@ -29,6 +29,10 @@ class BasePopulationParams:
     age_stratification: Optional[AgeStratification] = None
 
     def __post_init__(self):
+        if self.medicare_beneficiaries is None:
+            self.medicare_beneficiaries = int(self.total_population * 0.186)  # Default Medicare enrollment rate
+        if self.workforce_fraction is None:
+            self.workforce_fraction = 0.5  # Default workforce participation
         if self.age_stratification is None:
             self.age_stratification = AgeStratification.default()
 
@@ -46,10 +50,29 @@ class BaseInterventionParams:
     fat_loss_lb: float
     lifespan_increase_years: float
     healthspan_improvement_percent: float
-    savings_per_lb: float
+    savings_per_lb: float = 10.0  # Default $10 savings per pound improvement
+    hospital_visit_reduction_percent: float = 15.0  # Default 15% reduction
+    cost_per_hospital_visit: float = 12000.0  # Default $12,000 per visit
+
+    @classmethod
+    def from_config(cls, config: Dict[str, Any], base_params: Dict[str, Any]) -> 'BaseInterventionParams':
+        """Create parameters from configuration."""
+        effects = config['default_effects']
+        modifiers = config['impact_modifiers']
+        
+        return cls(
+            muscle_gain_lb=abs(effects['physical']['muscle_mass_change']),
+            fat_loss_lb=abs(effects['physical']['fat_mass_change']),
+            lifespan_increase_years=base_params['health_baselines']['average_lifespan'] * 
+                                  (effects['longevity']['lifespan_increase'] / 100.0),
+            healthspan_improvement_percent=modifiers['health_quality'] * 100,
+            savings_per_lb=10.0,  # Could be added to config
+            hospital_visit_reduction_percent=effects['healthcare']['hospital_visit_reduction'],
+            cost_per_hospital_visit=12000.0  # Could be added to config
+        )
 
 class BaseImpactModel(ABC):
-    """Abstract base class for all intervention impact models."""
+    """Base class for all intervention impact models."""
     
     def __init__(
         self,
@@ -61,20 +84,88 @@ class BaseImpactModel(ABC):
         self.econ = economic_params
         self.intervention = intervention_params
 
-    @abstractmethod
     def calculate_healthcare_savings(self) -> float:
-        """Calculate annual healthcare savings from the intervention."""
-        pass
+        """
+        Calculate annual healthcare savings from the intervention.
+        
+        Returns:
+            float: Annual healthcare savings in dollars
+        
+        Formula:
+            savings = target_population * (muscle_gain + fat_loss) * savings_per_lb +
+                     target_population * baseline_hospital_visits * hospital_reduction * cost_per_visit
+        """
+        # Savings from body composition changes
+        composition_savings = (
+            self.pop.target_population * 
+            (self.intervention.muscle_gain_lb + self.intervention.fat_loss_lb) * 
+            self.intervention.savings_per_lb
+        )
+        
+        # Additional savings from reduced hospital visits
+        baseline_visits = self.pop.target_population * 0.125  # Average visits per person per year
+        visit_reduction = baseline_visits * (self.intervention.hospital_visit_reduction_percent / 100.0)
+        hospital_savings = visit_reduction * self.intervention.cost_per_hospital_visit
+        
+        return composition_savings + hospital_savings
 
-    @abstractmethod
     def calculate_gdp_impact(self) -> float:
-        """Calculate GDP impact from the intervention."""
-        pass
+        """
+        Calculate GDP impact from the intervention.
+        
+        Returns:
+            float: Total GDP impact in dollars
+        
+        Formula:
+            impact = population * workforce_fraction * lifespan_increase * 
+                    annual_productivity * lifespan_to_gdp * discount_factor
+        """
+        working_years = (
+            self.intervention.lifespan_increase_years * 
+            self.pop.workforce_fraction
+        )
+        
+        annual_impact = (
+            self.pop.target_population * 
+            working_years * 
+            self.econ.annual_productivity
+        )
+        
+        # Apply discount rate over average period
+        return self.apply_discount_rate(annual_impact, working_years / 2)
 
-    @abstractmethod
     def calculate_medicare_impact(self) -> float:
-        """Calculate Medicare spending impact."""
-        pass
+        """
+        Calculate Medicare spending impact.
+        
+        Returns:
+            float: Annual Medicare savings in dollars
+        
+        Formula:
+            savings = beneficiaries * annual_cost * 
+                     (health_quality + biomarker_impact)
+        """
+        health_improvement = self.intervention.healthspan_improvement_percent / 100.0
+        
+        return (
+            self.pop.medicare_beneficiaries * 
+            self.econ.annual_healthcare_cost * 
+            health_improvement
+        )
+
+    def calculate_qalys(self) -> float:
+        """
+        Calculate Quality Adjusted Life Years gained.
+        
+        Returns:
+            float: Total QALYs gained across population
+        
+        Formula:
+            qalys = population * lifespan_increase * (1 + quality_improvement)
+        """
+        base_qaly = self.intervention.lifespan_increase_years
+        quality_improvement = self.intervention.healthspan_improvement_percent / 100.0
+        return self.pop.target_population * (base_qaly * (1 + quality_improvement))
 
     def apply_discount_rate(self, value: float, years: float) -> float:
         """Apply time value of money discount to a future value."""
@@ -85,90 +176,100 @@ class BaseImpactModel(ABC):
         healthcare_savings = self.calculate_healthcare_savings()
         gdp_impact = self.calculate_gdp_impact()
         medicare_impact = self.calculate_medicare_impact()
+        qalys = self.calculate_qalys()
         
         return {
             "annual_healthcare_savings_billions": healthcare_savings / 1e9,
             "gdp_impact_trillions": gdp_impact / 1e12,
-            "annual_medicare_impact_billions": medicare_impact / 1e9
+            "annual_medicare_impact_billions": medicare_impact / 1e9,
+            "qalys_gained": qalys
         }
 
-    @abstractmethod
     def get_param_ranges(self) -> Dict[str, List[float]]:
-        """Get parameter ranges for sensitivity analysis."""
-        pass
+        """
+        Get parameter ranges for sensitivity analysis.
+        
+        Returns:
+            Dict mapping parameter names to [min, max, step] lists
+        """
+        return {
+            'muscle_gain_lb': [0.0, 5.0, 0.5],
+            'fat_loss_lb': [0.0, 5.0, 0.5],
+            'lifespan_increase_years': [0.0, 3.0, 0.1],
+            'healthspan_improvement_percent': [0.0, 10.0, 1.0],
+            'hospital_visit_reduction_percent': [0.0, 30.0, 5.0]
+        }
 
-    def run_sensitivity_analysis(self) -> Dict[str, Dict[str, float]]:
-        """Run sensitivity analysis on key parameters."""
-        param_ranges = self.get_param_ranges()
-        baseline_values = self.get_current_params()
-        
-        return plot_sensitivity_analysis(
-            param_ranges,
-            baseline_values,
-            self.calculate_impacts_for_params
-        )
-
-    def run_monte_carlo(
-        self,
-        param_variations: Dict[str, float],
-        n_simulations: int = 1000
-    ) -> Tuple[np.ndarray, Dict[str, Dict[str, float]]]:
-        """Run Monte Carlo simulation with parameter variations."""
-        results = []
-        for _ in range(n_simulations):
-            # Vary parameters
-            self.intervention.muscle_gain_lb *= (1 + np.random.normal(0, param_variations['muscle_gain_lb']))
-            self.intervention.fat_loss_lb *= (1 + np.random.normal(0, param_variations['fat_loss_lb']))
-            self.intervention.lifespan_increase_years *= (1 + np.random.normal(0, param_variations['lifespan_increase_years']))
-            self.intervention.savings_per_lb *= (1 + np.random.normal(0, param_variations['savings_per_lb']))
-            
-            # Calculate impacts
-            result = {
-                'healthcare_savings': self.calculate_healthcare_savings(),
-                'gdp_impact': self.calculate_gdp_impact(),
-                'medicare_savings': self.calculate_medicare_impact(),
-                'qalys': self.calculate_qalys()
-            }
-            results.append(result)
-            
-            # Reset parameters
-            self.intervention.muscle_gain_lb /= (1 + np.random.normal(0, param_variations['muscle_gain_lb']))
-            self.intervention.fat_loss_lb /= (1 + np.random.normal(0, param_variations['fat_loss_lb']))
-            self.intervention.lifespan_increase_years /= (1 + np.random.normal(0, param_variations['lifespan_increase_years']))
-            self.intervention.savings_per_lb /= (1 + np.random.normal(0, param_variations['savings_per_lb']))
-        
-        # Calculate confidence intervals
-        results_array = np.array([[r[k] for k in r] for r in results])
-        confidence_intervals = {}
-        
-        for i, metric in enumerate(['healthcare_savings', 'gdp_impact', 'medicare_savings', 'qalys']):
-            values = results_array[:, i]
-            confidence_intervals[metric] = {
-                'mean': np.mean(values),
-                'std': np.std(values),
-                'lower_ci': np.percentile(values, 2.5),
-                'upper_ci': np.percentile(values, 97.5)
-            }
-        
-        return results_array, confidence_intervals
-
-    @abstractmethod
     def get_current_params(self) -> Dict[str, float]:
-        """Get current parameter values as dictionary."""
-        pass
+        """
+        Get current parameter values as dictionary.
+        
+        Returns:
+            Dict mapping parameter names to their current values
+        """
+        return {
+            'muscle_gain_lb': self.intervention.muscle_gain_lb,
+            'fat_loss_lb': self.intervention.fat_loss_lb,
+            'lifespan_increase_years': self.intervention.lifespan_increase_years,
+            'healthspan_improvement_percent': self.intervention.healthspan_improvement_percent,
+            'hospital_visit_reduction_percent': self.intervention.hospital_visit_reduction_percent
+        }
 
-    @abstractmethod
     def calculate_impacts_for_params(self, params: Dict[str, float]) -> Dict[str, float]:
-        """Calculate impacts for a given set of parameters."""
-        pass
+        """
+        Calculate impacts for a given set of parameters.
+        
+        Args:
+            params: Dict mapping parameter names to values
+        
+        Returns:
+            Dict mapping impact names to calculated values
+        """
+        # Store original values
+        orig_values = self.get_current_params()
+        
+        # Update parameters
+        self.intervention.muscle_gain_lb = params['muscle_gain_lb']
+        self.intervention.fat_loss_lb = params['fat_loss_lb']
+        self.intervention.lifespan_increase_years = params['lifespan_increase_years']
+        self.intervention.healthspan_improvement_percent = params['healthspan_improvement_percent']
+        self.intervention.hospital_visit_reduction_percent = params['hospital_visit_reduction_percent']
+        
+        # Calculate impacts
+        impacts = {
+            'healthcare_savings': self.calculate_healthcare_savings(),
+            'gdp_impact': self.calculate_gdp_impact(),
+            'medicare_impact': self.calculate_medicare_impact(),
+            'qalys': self.calculate_qalys()
+        }
+        
+        # Restore original values
+        self.intervention.muscle_gain_lb = orig_values['muscle_gain_lb']
+        self.intervention.fat_loss_lb = orig_values['fat_loss_lb']
+        self.intervention.lifespan_increase_years = orig_values['lifespan_increase_years']
+        self.intervention.healthspan_improvement_percent = orig_values['healthspan_improvement_percent']
+        self.intervention.hospital_visit_reduction_percent = orig_values['hospital_visit_reduction_percent']
+        
+        return impacts
 
-    @abstractmethod
     def validate_assumptions(self) -> bool:
-        """Validate that all model assumptions are reasonable."""
-        pass 
-
-    def calculate_qalys(self) -> float:
-        """Calculate Quality Adjusted Life Years gained."""
-        base_qaly = self.intervention.lifespan_increase_years
-        quality_improvement = self.intervention.healthspan_improvement_percent / 100.0
-        return self.pop.target_population * (base_qaly * (1 + quality_improvement)) 
+        """
+        Validate that all model assumptions are reasonable.
+        
+        Returns:
+            bool: True if all assumptions are valid
+        
+        Raises:
+            ValueError: If any assumptions are invalid
+        """
+        if self.intervention.muscle_gain_lb < 0:
+            raise ValueError("Muscle gain cannot be negative")
+        if self.intervention.fat_loss_lb < 0:
+            raise ValueError("Fat loss cannot be negative")
+        if self.intervention.lifespan_increase_years < 0:
+            raise ValueError("Lifespan increase cannot be negative")
+        if not 0 <= self.intervention.healthspan_improvement_percent <= 100:
+            raise ValueError("Health improvement must be between 0 and 100 percent")
+        if not 0 <= self.intervention.hospital_visit_reduction_percent <= 100:
+            raise ValueError("Hospital visit reduction must be between 0 and 100 percent")
+        return True 

@@ -1,144 +1,106 @@
 #!/usr/bin/env python3
-"""
-Generate economic impact reports for interventions.
-"""
+"""Generate economic impact report for interventions."""
 
-import os
+import yaml
 from pathlib import Path
 from datetime import datetime
-import importlib
-import sys
 
-from config_loader import load_base_parameters, load_interventions
-from models.base_model import BasePopulationParams, BaseEconomicParams
+from src.models.base_model import (
+    BaseImpactModel,
+    BasePopulationParams,
+    BaseEconomicParams,
+    BaseInterventionParams
+)
 
-def get_report_filename(intervention_name: str, params: dict) -> str:
-    """Generate a consistent filename based on model parameters."""
-    effects = params['default_effects']
+def load_config(config_path: str) -> dict:
+    """Load configuration from YAML file."""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+def get_report_filename(params: BaseInterventionParams) -> str:
+    """Generate report filename based on intervention parameters."""
     return (
-        f"{intervention_name.lower()}"
-        f"_m{abs(effects['physical']['muscle_mass_change']):.1f}lb"
-        f"_f{abs(effects['physical']['fat_mass_change']):.1f}lb"
-        f"_l{effects['longevity']['lifespan_increase']:.1f}pct.md"
-    )
-
-def get_model_class(intervention_name: str):
-    """Dynamically import and return the model class for an intervention."""
-    try:
-        module = importlib.import_module(f"models.{intervention_name.lower()}_model")
-        model_class = getattr(module, f"{intervention_name.capitalize()}ImpactModel")
-        param_class = getattr(module, f"{intervention_name.capitalize()}Params")
-        return model_class, param_class
-    except (ImportError, AttributeError) as e:
-        print(f"Warning: No specific model found for {intervention_name}. Error: {e}")
-        print("Using base model instead.")
-        from models.base_model import BaseImpactModel, BaseInterventionParams
-        return BaseImpactModel, BaseInterventionParams
-
-def create_intervention_params(param_class, intervention_config, base_params):
-    """Create intervention parameters from config."""
-    effects = intervention_config['default_effects']
-    modifiers = intervention_config['impact_modifiers']
-    
-    return param_class(
-        muscle_gain_lb=abs(effects['physical']['muscle_mass_change']),
-        fat_loss_lb=abs(effects['physical']['fat_mass_change']),
-        lifespan_increase_years=base_params['health_baselines']['average_lifespan'] * 
-                              (effects['longevity']['lifespan_increase'] / 100.0),
-        healthspan_improvement_percent=modifiers['health_quality'] * 100,
-        savings_per_lb=10.0  # Could be added to intervention config
+        f"impact_analysis_"
+        f"m{params.muscle_gain_lb:.1f}lb_"
+        f"f{params.fat_loss_lb:.1f}lb_"
+        f"l{params.lifespan_increase_years:.2f}y_"
+        f"h{params.healthspan_improvement_percent:.1f}pct.md"
     )
 
 def main():
-    """Generate reports for all configured interventions."""
-    print("\nHealth Economic Impact Simulator - Report Generation")
-    print("=" * 50)
-    
+    """Main entry point."""
     # Load configurations
-    base_params = load_base_parameters()
-    interventions = load_interventions()
+    base_config = load_config('config/base_parameters.yml')
     
-    if not interventions:
-        print("\nError: No intervention configurations found.")
-        print("Please add intervention config files to config/interventions/")
-        sys.exit(1)
+    # Create output directory if it doesn't exist
+    Path('reports/generated').mkdir(parents=True, exist_ok=True)
     
-    # Initialize base parameters
-    pop_params = BasePopulationParams(
-        total_population=base_params['population']['total_us'],
-        target_population=base_params['population']['adult'],
-        medicare_beneficiaries=int(base_params['population']['total_us'] * 
-                                 base_params['health_baselines']['medicare_enrollment_rate']),
-        workforce_fraction=0.5  # Could be added to base_parameters.yml
-    )
-    
-    econ_params = BaseEconomicParams(
-        annual_healthcare_cost=base_params['economics']['medicare_per_capita'],
-        annual_productivity=base_params['economics']['gdp_per_capita'],
-        discount_rate=0.03  # Could be added to base_parameters.yml
-    )
-    
-    # Create reports directory
-    reports_dir = Path("reports/generated")
-    reports_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Generate reports for each intervention
-    print(f"\nFound {len(interventions)} intervention configurations.")
-    
-    for intervention_name, intervention_config in interventions.items():
-        print(f"\nProcessing {intervention_name} intervention...")
-        
-        try:
-            # Get appropriate model class
-            model_class, param_class = get_model_class(intervention_name)
-            
-            # Create intervention-specific parameters
-            intervention_params = create_intervention_params(
-                param_class, intervention_config, base_params
-            )
-            
-            # Create model
-            model = model_class(pop_params, econ_params, intervention_params)
-            
-            # Generate report
-            description = f"""
-This report analyzes the economic and health impacts of {intervention_config['name']}: {intervention_config['description']}.
-
-Key effects analyzed:
-1. Body composition changes: {intervention_config['default_effects']['physical']['muscle_mass_change']} lb muscle, 
-   {intervention_config['default_effects']['physical']['fat_mass_change']} lb fat
-2. Longevity impact: {intervention_config['default_effects']['longevity']['lifespan_increase']}% lifespan increase
-3. Healthcare utilization: {intervention_config['default_effects']['healthcare']['hospital_visit_reduction']}% reduction in hospital visits
-
-The analysis includes direct healthcare savings, GDP impact from increased productive years, 
-and Medicare spending reductions from improved health outcomes.
-"""
-            
-            from utils.report_generator import generate_intervention_report
-            report = generate_intervention_report(
-                model,
-                title=f"Economic Impact Analysis of {intervention_config['name']}",
-                description=description.strip(),
-                include_monte_carlo=True
-            )
-            
-            # Save report with parameter-based filename
-            report_path = reports_dir / get_report_filename(intervention_name, intervention_config)
-            
-            with open(report_path, "w") as f:
-                f.write(report)
-            
-            print(f"Report generated: {report_path}")
-            print("\nReport Preview:\n")
-            print(report[:500] + "...\n")
-            
-        except Exception as e:
-            print(f"Error processing {intervention_name}: {str(e)}")
-            print("Continuing with next intervention...")
+    # Process each intervention config
+    for config_file in Path('config/interventions').glob('*.yml'):
+        if config_file.name == 'template.yml':
             continue
-    
-    print("\nReport generation complete.")
-    print("=" * 50)
+            
+        intervention_config = load_config(str(config_file))
+        
+        # Create model parameters
+        pop_params = BasePopulationParams(
+            total_population=base_config['population']['total'],
+            target_population=base_config['population']['target'],
+            medicare_beneficiaries=base_config['population']['medicare_beneficiaries'],
+            workforce_fraction=base_config['population']['workforce_fraction']
+        )
+        
+        econ_params = BaseEconomicParams(
+            annual_healthcare_cost=base_config['economics']['annual_healthcare_cost'],
+            annual_productivity=base_config['economics']['annual_productivity'],
+            discount_rate=base_config['economics']['discount_rate']
+        )
+        
+        intervention_params = BaseInterventionParams.from_config(
+            intervention_config,
+            base_config
+        )
+        
+        # Create and validate model
+        model = BaseImpactModel(pop_params, econ_params, intervention_params)
+        model.validate_assumptions()
+        
+        # Generate report
+        report = model.generate_full_report()
+        
+        # Save report
+        report_file = get_report_filename(intervention_params)
+        report_path = Path('reports/generated') / report_file
+        
+        with open(report_path, 'w') as f:
+            f.write(f"# Economic Impact Analysis: {intervention_config['name']}\n\n")
+            f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write("## Summary\n\n")
+            f.write(f"- Annual Healthcare Savings: ${report['annual_healthcare_savings_billions']:.2f}B\n")
+            f.write(f"- GDP Impact: ${report['gdp_impact_trillions']:.2f}T\n")
+            f.write(f"- Annual Medicare Savings: ${report['annual_medicare_impact_billions']:.2f}B\n")
+            f.write(f"- QALYs Gained: {report['qalys_gained']:,.0f}\n")
+            
+            f.write("\n## Parameters\n\n")
+            f.write("### Intervention Effects\n")
+            f.write(f"- Muscle Mass Change: {intervention_params.muscle_gain_lb:.1f} lb\n")
+            f.write(f"- Fat Mass Change: {intervention_params.fat_loss_lb:.1f} lb\n")
+            f.write(f"- Lifespan Increase: {intervention_params.lifespan_increase_years:.2f} years\n")
+            f.write(f"- Health Improvement: {intervention_params.healthspan_improvement_percent:.1f}%\n")
+            f.write(f"- Hospital Visit Reduction: {intervention_params.hospital_visit_reduction_percent:.1f}%\n")
+            
+            f.write("\n### Population Parameters\n")
+            f.write(f"- Total Population: {pop_params.total_population:,}\n")
+            f.write(f"- Target Population: {pop_params.target_population:,}\n")
+            f.write(f"- Medicare Beneficiaries: {pop_params.medicare_beneficiaries:,}\n")
+            f.write(f"- Workforce Fraction: {pop_params.workforce_fraction:.1%}\n")
+            
+            f.write("\n### Economic Parameters\n")
+            f.write(f"- Annual Healthcare Cost: ${econ_params.annual_healthcare_cost:,.2f}\n")
+            f.write(f"- Annual Productivity: ${econ_params.annual_productivity:,.2f}\n")
+            f.write(f"- Discount Rate: {econ_params.discount_rate:.1%}\n")
+        
+        print(f"Generated report: {report_path}")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main() 
