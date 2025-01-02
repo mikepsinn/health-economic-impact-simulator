@@ -143,8 +143,6 @@ The generated report will include:
 3. Quality Adjusted Life Years (QALYs)
 4. Healthcare utilization metrics (e.g. hospital visits, hip fractures)
 
-This MVP version focuses on essential calculations while maintaining flexibility for future complexity additions.
-
 
 
 
