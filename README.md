@@ -2,6 +2,10 @@
 
 This project is a web app that calculates the health and economic impact of therapeutic interventions, with a focus on Medicare spending implications.
 
+## Quick Start Guide
+
+See [docs/QUICKSTART.md](docs/QUICKSTART.md)
+
 ## How it works
 
 The simulator:
@@ -142,9 +146,5 @@ The generated report will include:
 2. GDP impact
 3. Quality Adjusted Life Years (QALYs)
 4. Healthcare utilization metrics (e.g. hospital visits, hip fractures)
-
-This MVP version focuses on essential calculations while maintaining flexibility for future complexity additions.
-
-
 
 

@@ -1,17 +1,19 @@
+"""Main Streamlit application for the health economic impact simulator."""
+
 import streamlit as st
-from config_loader import (
+from ..config.loader import (
     load_base_parameters, 
     load_interventions,
     PARAMETER_RANGES,
     MODIFIER_RANGES
 )
-from calculations import (
+from ..core.calculations import (
     calculate_impacts,
     calculate_time_series,
     calculate_sensitivity_scenarios,
     format_large_number
 )
-from visualizations import (
+from ..visualization.plots import (
     plot_medicare_breakdown,
     plot_population_comparison,
     plot_time_series,
