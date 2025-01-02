@@ -15,6 +15,7 @@ from config.global_parameters import config as global_config
 
 def load_python_config(path: str) -> object:
     """Load configuration from Python file."""
+    print(f"Loading config from {path}")
     spec = importlib.util.spec_from_file_location("config", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -23,10 +24,14 @@ def load_python_config(path: str) -> object:
 def main():
     """Main entry point."""
     # Process each intervention config
-    for config_file in Path('config/interventions').glob('*.py'):
+    config_files = list(Path('config/interventions').glob('*.py'))
+    print(f"Found {len(config_files)} intervention configs")
+    
+    for config_file in config_files:
         if config_file.name == '__init__.py':
             continue
             
+        print(f"\nProcessing {config_file.name}")
         intervention_config = load_python_config(str(config_file))
         
         # Create model parameters

@@ -74,6 +74,22 @@ def write_intervention_analysis(
         f.write("2. Lower dialysis and treatment costs\n")
         f.write("3. Enhanced patient wellbeing\n\n")
     
+    # Biomarker Impact
+    if model.intervention.biomarkers:
+        f.write("### Biomarker Impact Pathway\n")
+        if model.intervention.biomarkers.egfr_change is not None:
+            f.write(f"- eGFR Change: {model.intervention.biomarkers.egfr_change:+.1f} mL/min/1.73m²\n")
+        if model.intervention.biomarkers.cystatin_c_change is not None:
+            f.write(f"- Cystatin C Change: {model.intervention.biomarkers.cystatin_c_change:+.3f} mg/L\n")
+        if model.intervention.biomarkers.creatinine_change is not None:
+            f.write(f"- Creatinine Change: {model.intervention.biomarkers.creatinine_change:+.2f} mg/dL\n")
+        for marker, value in model.intervention.biomarkers.other_markers.items():
+            f.write(f"- {marker}: {value}\n")
+        f.write("These changes indicate:\n")
+        f.write("1. Improved metabolic health\n")
+        f.write("2. Enhanced organ function\n")
+        f.write("3. Better health trajectory\n\n")
+    
     # Longevity Impact
     f.write("### Longevity Impact Pathway\n")
     f.write(f"- Lifespan Increase: {model.intervention.lifespan_increase_years:.2f} years\n")

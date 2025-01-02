@@ -1,6 +1,6 @@
 """Parameter classes for economic impact models."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Any, Optional
 
 @dataclass
@@ -132,6 +132,14 @@ class BaseEconomicParams:
             raise ValueError("Discount rate must be between 0 and 20%")
 
 @dataclass
+class BiomarkerParams:
+    """Parameters for biomarker changes."""
+    egfr_change: Optional[float] = None  # mL/min/1.73m²
+    cystatin_c_change: Optional[float] = None  # mg/L
+    creatinine_change: Optional[float] = None  # mg/dL
+    other_markers: Dict[str, float] = field(default_factory=dict)
+
+@dataclass
 class BaseInterventionParams:
     """Complete set of intervention parameters."""
     longevity: LongevityParams
@@ -140,6 +148,7 @@ class BaseInterventionParams:
     cognitive: Optional[CognitiveParams] = None
     kidney: Optional[KidneyParams] = None
     physical: Optional[PhysicalParams] = None
+    biomarkers: Optional[BiomarkerParams] = None
 
     @property
     def lifespan_increase_years(self) -> float:
@@ -151,6 +160,7 @@ class BaseInterventionParams:
         """Create parameters from configuration."""
         effects = config['default_effects']
         modifiers = base_params['impact_modifiers']  # Now using global modifiers
+        healthcare = base_params['healthcare']  # Get healthcare params for savings rates
         
         # Create optional parameter objects if present in config
         cognitive = CognitiveParams(
@@ -168,13 +178,24 @@ class BaseInterventionParams:
             fat_mass_change_lb=effects['physical']['fat_mass_change']
         ) if effects.get('physical') else None
         
+        biomarkers = None
+        if effects.get('biomarkers'):
+            biomarkers = BiomarkerParams(
+                egfr_change=effects['biomarkers'].get('egfr_change'),
+                cystatin_c_change=effects['biomarkers'].get('cystatin_c_change'),
+                creatinine_change=effects['biomarkers'].get('creatinine_change'),
+                other_markers=effects['biomarkers'].get('other_markers', {})
+            )
+        
         return cls(
             longevity=LongevityParams(
                 lifespan_increase_percent=effects['longevity']['lifespan_increase'],
                 healthspan_improvement_percent=effects['longevity']['healthspan_improvement']
             ),
             healthcare=HealthcareParams(
-                hospital_visit_reduction_percent=effects['healthcare']['hospital_visit_reduction']
+                hospital_visit_reduction_percent=effects['healthcare']['hospital_visit_reduction'],
+                savings_per_lb=healthcare['savings_per_lb_muscle'],  # Use global savings rates
+                cost_per_hospital_visit=12000.0  # Default value
             ),
             modifiers=ImpactModifiers(
                 iq_to_gdp=modifiers['iq_to_gdp'],
@@ -185,5 +206,6 @@ class BaseInterventionParams:
             ),
             cognitive=cognitive,
             kidney=kidney,
-            physical=physical
+            physical=physical,
+            biomarkers=biomarkers
         ) 
