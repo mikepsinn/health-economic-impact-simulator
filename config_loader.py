@@ -1,22 +1,44 @@
 import yaml
+import json
 from pathlib import Path
 from typing import Dict, Any
+from jsonschema import validate, ValidationError
+
+def load_schema() -> Dict[Any, Any]:
+    """Load the JSON schema for config validation."""
+    with open('config/schema.json', 'r') as file:
+        return json.load(file)
 
 def load_yaml(file_path: str) -> Dict[Any, Any]:
     """Load a YAML file."""
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
 
+def validate_config(config: Dict[Any, Any], schema_section: str) -> None:
+    """Validate config against schema section."""
+    schema = load_schema()
+    if schema_section not in schema["definitions"]:
+        raise ValueError(f"Unknown schema section: {schema_section}")
+    
+    try:
+        validate(instance=config, schema=schema["definitions"][schema_section])
+    except ValidationError as e:
+        raise ValueError(f"Configuration validation failed: {str(e)}")
+
 def load_base_parameters() -> Dict[Any, Any]:
-    """Load base parameters from config."""
-    return load_yaml('config/base_parameters.yml')
+    """Load and validate base parameters from config."""
+    config = load_yaml('config/base_parameters.yml')
+    validate_config(config, "base_parameters")
+    return config
 
 def load_interventions() -> Dict[str, Dict[Any, Any]]:
-    """Load all intervention configurations."""
+    """Load and validate all intervention configurations."""
     interventions = {}
     interventions_dir = Path('config/interventions')
     for file in interventions_dir.glob('*.yml'):
-        interventions[file.stem] = load_yaml(str(file))
+        config = load_yaml(str(file))
+        validate_config(config, "intervention")
+        interventions[file.stem] = config
     return interventions
 
 # Default ranges for parameter adjustments
