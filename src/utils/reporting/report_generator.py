@@ -1,74 +1,54 @@
-"""Main report generator module."""
+"""Report generation utilities."""
 
-from datetime import datetime
 from pathlib import Path
-from typing import TextIO, Dict
+from typing import Dict
 
-from src.models.base_model import (
-    BaseImpactModel,
-    BaseInterventionParams
-)
+from src.models.base_model import BaseImpactModel
+from src.models.parameters import BaseInterventionParams
+from src.models.report import Report
 from .writers import (
     write_executive_summary,
     write_study_design,
-    write_intervention_analysis,
-    write_economic_calculations,
-    write_population_impact,
-    write_uncertainty_analysis,
-    write_conclusions
+    write_intervention_analysis
 )
 
-def get_report_filename(intervention_name: str, params: BaseInterventionParams) -> str:
-    """Generate report filename based on intervention parameters."""
-    clean_name = intervention_name.lower().replace(" ", "_")
-    muscle_change = params.physical.muscle_mass_change_lb if params.physical else 0.0
-    fat_change = params.physical.fat_mass_change_lb if params.physical else 0.0
+def get_report_filename(name: str, params: BaseInterventionParams) -> str:
+    """Format report filename from key parameters."""
+    # Extract key parameters for filename
+    muscle = params.physical.muscle_mass_change_lb if params.physical else 0
+    fat = params.physical.fat_mass_change_lb if params.physical else 0
+    lifespan = params.longevity.lifespan_increase_years
+    health = params.longevity.healthspan_improvement_percent
+    
+    # Format filename with key metrics
     return (
-        f"{clean_name}_"
-        f"m{muscle_change:+.1f}lb_"
-        f"f{fat_change:+.1f}lb_"
-        f"l{params.lifespan_increase_years:.2f}y_"
-        f"h{params.longevity.healthspan_improvement_percent:.1f}pct.md"
+        f"{name.lower()}_"
+        f"m{muscle:+.1f}lb_"
+        f"f{fat:+.1f}lb_"
+        f"l{lifespan:.2f}y_"
+        f"h{health:.1f}pct.md"
     )
 
-def generate_report(
-    intervention_config: dict,
-    model: BaseImpactModel,
-    report: dict,
-    base_config: dict,
-    output_dir: Path = Path('reports/generated')
-) -> Path:
-    """Generate a complete economic impact report.
+def generate_report(config: Dict, model: BaseImpactModel, report: Report, base_params: Dict) -> str:
+    """Generate markdown report from model results."""
+    # Format filename
+    report_file = get_report_filename(config['name'], model.intervention)
     
-    Args:
-        intervention_config: Configuration for the intervention
-        model: The impact model instance
-        report: Generated report data
-        base_config: Base configuration parameters
-        output_dir: Directory to save the report
+    # Create report directory
+    report_dir = Path('reports/generated')
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report_path = report_dir / report_file
+    
+    # Generate report content
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write(f"# Impact Analysis: {config['name']}\n\n")
         
-    Returns:
-        Path to the generated report file
-    """
-    # Create output directory
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Generate filename
-    report_file = get_report_filename(intervention_config['name'], model.intervention)
-    report_path = output_dir / report_file
-    
-    # Generate report
-    with open(report_path, 'w') as f:
-        # Title
-        f.write(f"# Impact Analysis: {intervention_config['name']}\n\n")
-
-        # Write each section
-        write_executive_summary(f, intervention_config, report)
+        write_executive_summary(f, config, report)
         write_study_design(f)
         write_intervention_analysis(f, model)
-        write_economic_calculations(f, model, base_config)
-        write_population_impact(f, model)
-        write_uncertainty_analysis(f)
-        write_conclusions(f, model, report)
+        
+        # Add validation warnings if any
+        if report.validation_warnings:
+            f.write(report.validation_warnings)
     
-    return report_path 
+    return str(report_path) 

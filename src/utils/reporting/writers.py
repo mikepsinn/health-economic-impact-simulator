@@ -4,21 +4,22 @@ from datetime import datetime
 from typing import TextIO, Dict
 
 from src.models.base_model import BaseImpactModel
+from src.models.report import Report
 from .formatters import format_currency, format_percentage, format_number, format_equation
 
 def write_executive_summary(
     f: TextIO,
     intervention_config: dict,
-    report: dict
+    report: Report
 ) -> None:
     """Write executive summary section."""
     f.write("## Executive Summary\n\n")
     f.write(f"{intervention_config['description']}\n\n")
     f.write("### Key Findings\n")
-    f.write(f"- Annual Healthcare System Savings: {format_currency(report['annual_healthcare_savings_billions']*1e9)}\n")
-    f.write(f"- Total GDP Impact: {format_currency(report['gdp_impact_trillions']*1e12)}\n")
-    f.write(f"- Annual Medicare Cost Reduction: {format_currency(report['annual_medicare_impact_billions']*1e9)}\n")
-    f.write(f"- Quality-Adjusted Life Years Gained: {format_number(report['qalys_gained'])}\n\n")
+    f.write(f"- Annual Healthcare System Savings: {format_currency(report.metrics.annual_healthcare_savings)}\n")
+    f.write(f"- Total GDP Impact: {format_currency(report.metrics.total_gdp_impact)}\n")
+    f.write(f"- Annual Medicare Cost Reduction: {format_currency(report.metrics.annual_medicare_savings)}\n")
+    f.write(f"- Quality-Adjusted Life Years Gained: {format_number(report.metrics.total_qalys)}\n\n")
 
 def write_study_design(f: TextIO) -> None:
     """Write study design section."""
@@ -57,118 +58,31 @@ def write_intervention_analysis(
     # Cognitive Impact
     if model.intervention.cognitive:
         f.write("### Cognitive Impact Pathway\n")
-        f.write(f"- IQ Increase: {model.intervention.cognitive.iq_increase:+.1f} points\n")
+        f.write(f"- IQ Increase: +{model.intervention.cognitive.iq_increase:.1f} points\n")
         f.write(f"- Alzheimer's Progression Reduction: {model.intervention.cognitive.alzheimers_reduction:.1f}%\n")
         f.write("These improvements lead to:\n")
         f.write("1. Enhanced workforce productivity\n")
         f.write("2. Reduced cognitive decline costs\n")
         f.write("3. Improved quality of life\n\n")
     
-    # Kidney Impact
+    # Kidney Function Impact
     if model.intervention.kidney:
         f.write("### Kidney Function Impact Pathway\n")
-        f.write(f"- eGFR Improvement: {model.intervention.kidney.egfr_improvement:+.1f} mL/min/1.73m²\n")
+        f.write(f"- eGFR Improvement: +{model.intervention.kidney.egfr_improvement:.1f} mL/min/1.73m²\n")
         f.write(f"- CKD Progression Reduction: {model.intervention.kidney.ckd_progression_reduction:.1f}%\n")
         f.write("These improvements result in:\n")
-        f.write("1. Reduced kidney disease progression\n")
-        f.write("2. Lower dialysis and treatment costs\n")
-        f.write("3. Enhanced patient wellbeing\n\n")
-    
-    # Biomarker Impact
-    if model.intervention.biomarkers:
-        f.write("### Biomarker Impact Pathway\n")
-        if model.intervention.biomarkers.egfr_change is not None:
-            f.write(f"- eGFR Change: {model.intervention.biomarkers.egfr_change:+.1f} mL/min/1.73m²\n")
-        if model.intervention.biomarkers.cystatin_c_change is not None:
-            f.write(f"- Cystatin C Change: {model.intervention.biomarkers.cystatin_c_change:+.3f} mg/L\n")
-        if model.intervention.biomarkers.creatinine_change is not None:
-            f.write(f"- Creatinine Change: {model.intervention.biomarkers.creatinine_change:+.2f} mg/dL\n")
-        for marker, value in model.intervention.biomarkers.other_markers.items():
-            f.write(f"- {marker}: {value}\n")
-        f.write("These changes indicate:\n")
-        f.write("1. Improved metabolic health\n")
-        f.write("2. Enhanced organ function\n")
-        f.write("3. Better health trajectory\n\n")
+        f.write("1. Reduced Medicare costs\n")
+        f.write("2. Improved quality of life\n")
+        f.write("3. Extended healthspan\n\n")
     
     # Longevity Impact
     f.write("### Longevity Impact Pathway\n")
-    f.write(f"- Lifespan Increase: {model.intervention.lifespan_increase_years:.2f} years\n")
-    f.write(f"- Health Quality Improvement: {format_percentage(model.intervention.longevity.healthspan_improvement_percent)}\n")
+    f.write(f"- Lifespan Increase: {model.intervention.longevity.lifespan_increase_years:.2f} years\n")
+    f.write(f"- Health Quality Improvement: {model.intervention.longevity.healthspan_improvement_percent:.1f}%\n")
     f.write("These improvements contribute to:\n")
-    f.write("1. Extended workforce participation\n")
+    f.write("1. Extended productive years\n")
     f.write("2. Increased lifetime earnings\n")
     f.write("3. Enhanced quality of life\n\n")
-    
-    # Healthcare System Impact
-    f.write("### Healthcare System Impact\n")
-    f.write(f"- Hospital Visit Reduction: {format_percentage(model.intervention.healthcare.hospital_visit_reduction_percent)}\n")
-    f.write("This leads to:\n")
-    f.write("1. Reduced acute care costs\n")
-    f.write("2. Lower Medicare spending\n")
-    f.write("3. Improved healthcare system efficiency\n\n")
-
-def write_economic_calculations(
-    f: TextIO,
-    model: BaseImpactModel,
-    base_config: dict
-) -> None:
-    """Write economic calculations section."""
-    f.write("## Economic Impact Calculations\n\n")
-    
-    # Healthcare Savings
-    f.write("### Healthcare Savings Calculation\n")
-    equation = "Annual Savings = Population * (Muscle_Mass_Change + Fat_Mass_Change) * Savings_per_lb +\n"
-    equation += "                Population * Baseline_Visits * Visit_Reduction * Cost_per_Visit"
-    f.write(format_equation(equation))
-    
-    muscle_change = model.intervention.physical.muscle_mass_change_lb if model.intervention.physical else 0.0
-    fat_change = model.intervention.physical.fat_mass_change_lb if model.intervention.physical else 0.0
-    composition_savings = (
-        model.pop.target_population * 
-        (muscle_change + fat_change) * 
-        model.intervention.healthcare.savings_per_lb
-    )
-    baseline_visits = model.pop.target_population * base_config['healthcare']['annual_hospital_visits'] / model.pop.total_population
-    visit_reduction = baseline_visits * (model.intervention.healthcare.hospital_visit_reduction_percent / 100.0)
-    hospital_savings = visit_reduction * model.intervention.healthcare.cost_per_hospital_visit
-    
-    f.write(f"\nComposition-related savings: {format_currency(composition_savings)}\n")
-    f.write(f"Hospital visit reduction savings: {format_currency(hospital_savings)}\n")
-    f.write(f"Total annual healthcare savings: {format_currency(composition_savings + hospital_savings)}\n\n")
-    
-    # GDP Impact
-    f.write("### GDP Impact Calculation\n")
-    equation = "GDP Impact = Population * Workforce_Fraction * Lifespan_Increase *\n"
-    equation += "            Annual_Productivity * (1 / (1 + Discount_Rate)^(Years/2))"
-    f.write(format_equation(equation))
-    
-    working_years = model.intervention.lifespan_increase_years * model.pop.workforce_fraction
-    annual_impact = model.pop.target_population * working_years * model.econ.annual_productivity
-    discounted_impact = model.apply_discount_rate(annual_impact, working_years / 2)
-    
-    f.write(f"\nAdditional productive years: {working_years:.2f}\n")
-    f.write(f"Annual economic impact: {format_currency(annual_impact)}\n")
-    f.write(f"Discounted lifetime impact: {format_currency(discounted_impact)}\n\n")
-    
-    # Medicare Impact
-    f.write("### Medicare Impact Calculation\n")
-    equation = "Medicare Savings = Beneficiaries * Annual_Cost * Health_Improvement"
-    f.write(format_equation(equation))
-    
-    medicare_impact = (
-        model.pop.medicare_beneficiaries * 
-        model.econ.annual_healthcare_cost * 
-        (model.intervention.longevity.healthspan_improvement_percent / 100.0)
-    )
-    f.write(f"\nAnnual Medicare savings: {format_currency(medicare_impact)}\n\n")
-    
-    # QALY Impact
-    f.write("### QALY Calculation\n")
-    equation = "QALYs = Population * Lifespan_Increase * (1 + Quality_Improvement)"
-    f.write(format_equation(equation))
-    
-    qalys = model.calculate_qalys()
-    f.write(f"\nTotal QALYs gained: {format_number(qalys)}\n\n")
 
 def write_population_impact(
     f: TextIO,

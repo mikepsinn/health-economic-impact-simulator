@@ -14,12 +14,12 @@ class FollistatinConfig(BaseModel):
     }
     
     longevity: dict = {
-        "lifespan_increase_years": 1.98,  # 2.5% of 79.1 years
-        "healthspan_improvement_percent": 80.0
+        "lifespan_increase_years": 0,  # 2.5% of 79.1 years
+        "healthspan_improvement_percent": 0
     }
     
     healthcare: dict = {
-        "hospital_visit_reduction_percent": 15.0
+        "hospital_visit_reduction_percent": 0
     }
     
     references: List[str] = [
