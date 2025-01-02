@@ -139,7 +139,8 @@ impacts = calculate_impacts(intervention, population_type, base_params)
 
 # Display key parameters
 st.markdown("### Key Parameters")
-st.markdown("Current parameter values and their effects on the model. 👈 Open the sidebar to adjust them.")
+st.markdown("Current parameter values and their effects on the model.")
+st.markdown("👈 Open the sidebar to adjust parameters.")
 st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
 
 # Create three columns for better organization
