@@ -1,6 +1,6 @@
 # Health and Economic Impact Simulator
 
-This project is a web app that calculates the health and economic impact of therapeutic interventions, with a focus on Medicare spending implications.
+This project calculates the health and economic impact of therapeutic interventions, with a focus on Medicare spending implications.
 
 ## How it works
 
@@ -27,23 +27,6 @@ The simulator:
 
 ## Developer Implementation Guide
 
-### Application Structure
-```
-/src
-  /config
-    - base_parameters.yml    # Default population parameters
-    - interventions/         # One YAML file per intervention
-      - follistatin.yml
-      - klotho.yml
-      - thymosin.yml
-  /components
-    - ParameterForm.tsx     # Input form for modifying parameters
-    - ResultsDisplay.tsx    # Display calculations and graphs
-    - Report.tsx           # Formatted report for agencies
-  /utils
-    - calculations.ts      # Implementation of formulas
-    - formatters.ts       # Data formatting for display
-```
 
 ### Intervention YAML Structure
 ```yaml
