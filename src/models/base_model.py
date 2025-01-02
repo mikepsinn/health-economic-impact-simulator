@@ -7,8 +7,9 @@ Template for creating intervention-specific economic impact models.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 import pandas as pd
+import numpy as np
 
 from src.utils.stratification import AgeStratification
 from src.utils.monte_carlo import run_monte_carlo, calculate_confidence_intervals
@@ -38,6 +39,15 @@ class BaseEconomicParams:
     annual_productivity: float
     discount_rate: float = 0.03  # Default 3% discount rate
 
+@dataclass
+class BaseInterventionParams:
+    """Base parameters for intervention effects."""
+    muscle_gain_lb: float
+    fat_loss_lb: float
+    lifespan_increase_years: float
+    healthspan_improvement_percent: float
+    savings_per_lb: float
+
 class BaseImpactModel(ABC):
     """Abstract base class for all intervention impact models."""
     
@@ -45,7 +55,7 @@ class BaseImpactModel(ABC):
         self,
         population_params: BasePopulationParams,
         economic_params: BaseEconomicParams,
-        intervention_params: Any  # Specific to each intervention
+        intervention_params: BaseInterventionParams
     ):
         self.pop = population_params
         self.econ = economic_params
@@ -102,19 +112,45 @@ class BaseImpactModel(ABC):
         self,
         param_variations: Dict[str, float],
         n_simulations: int = 1000
-    ) -> Dict[str, pd.DataFrame]:
-        """Run Monte Carlo simulation."""
-        base_params = self.get_current_params()
+    ) -> Tuple[np.ndarray, Dict[str, Dict[str, float]]]:
+        """Run Monte Carlo simulation with parameter variations."""
+        results = []
+        for _ in range(n_simulations):
+            # Vary parameters
+            self.intervention.muscle_gain_lb *= (1 + np.random.normal(0, param_variations['muscle_gain_lb']))
+            self.intervention.fat_loss_lb *= (1 + np.random.normal(0, param_variations['fat_loss_lb']))
+            self.intervention.lifespan_increase_years *= (1 + np.random.normal(0, param_variations['lifespan_increase_years']))
+            self.intervention.savings_per_lb *= (1 + np.random.normal(0, param_variations['savings_per_lb']))
+            
+            # Calculate impacts
+            result = {
+                'healthcare_savings': self.calculate_healthcare_savings(),
+                'gdp_impact': self.calculate_gdp_impact(),
+                'medicare_savings': self.calculate_medicare_impact(),
+                'qalys': self.calculate_qalys()
+            }
+            results.append(result)
+            
+            # Reset parameters
+            self.intervention.muscle_gain_lb /= (1 + np.random.normal(0, param_variations['muscle_gain_lb']))
+            self.intervention.fat_loss_lb /= (1 + np.random.normal(0, param_variations['fat_loss_lb']))
+            self.intervention.lifespan_increase_years /= (1 + np.random.normal(0, param_variations['lifespan_increase_years']))
+            self.intervention.savings_per_lb /= (1 + np.random.normal(0, param_variations['savings_per_lb']))
         
-        results = run_monte_carlo(
-            base_params,
-            param_variations,
-            self.calculate_impacts_for_params,
-            n_simulations
-        )
+        # Calculate confidence intervals
+        results_array = np.array([[r[k] for k in r] for r in results])
+        confidence_intervals = {}
         
-        confidence_intervals = calculate_confidence_intervals(results)
-        return results, confidence_intervals
+        for i, metric in enumerate(['healthcare_savings', 'gdp_impact', 'medicare_savings', 'qalys']):
+            values = results_array[:, i]
+            confidence_intervals[metric] = {
+                'mean': np.mean(values),
+                'std': np.std(values),
+                'lower_ci': np.percentile(values, 2.5),
+                'upper_ci': np.percentile(values, 97.5)
+            }
+        
+        return results_array, confidence_intervals
 
     @abstractmethod
     def get_current_params(self) -> Dict[str, float]:
@@ -130,3 +166,9 @@ class BaseImpactModel(ABC):
     def validate_assumptions(self) -> bool:
         """Validate that all model assumptions are reasonable."""
         pass 
+
+    def calculate_qalys(self) -> float:
+        """Calculate Quality Adjusted Life Years gained."""
+        base_qaly = self.intervention.lifespan_increase_years
+        quality_improvement = self.intervention.healthspan_improvement_percent / 100.0
+        return self.pop.target_population * (base_qaly * (1 + quality_improvement)) 

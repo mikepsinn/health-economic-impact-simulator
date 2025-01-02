@@ -69,14 +69,17 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ## 1. Introduction
 
 ### 1.1 Background
-This analysis examines the potential economic and health impacts of interventions that modify body composition and longevity. The study focuses on two primary mechanisms of impact:
+This analysis examines the potential economic and health impacts of interventions that modify body composition and longevity. The study focuses on three primary mechanisms of impact:
 1. Direct healthcare cost savings from improved body composition
 2. Economic gains from increased healthy lifespan
+3. Quality of life improvements and reduced healthcare utilization
 
 ### 1.2 Study Objectives
 - Quantify the cumulative healthcare savings from population-wide body composition improvements
 - Calculate the economic impact of increased lifespan on GDP and Medicare spending
-- Assess the uncertainty and sensitivity of these estimates
+- Estimate quality-adjusted life year (QALY) gains
+- Assess healthcare utilization changes
+- Evaluate uncertainty and sensitivity of estimates
 - Provide actionable insights for policy makers and healthcare stakeholders
 
 ## 2. Methodology
@@ -94,7 +97,8 @@ This analysis examines the potential economic and health impacts of intervention
 ### 2.3 Intervention Parameters
 - Muscle Mass Gain: {model.intervention.muscle_gain_lb:.1f} lb per person
 - Fat Mass Loss: {model.intervention.fat_loss_lb:.1f} lb per person
-- Lifespan Increase: {model.intervention.lifespan_increase_years:.2f} years ({model.intervention.lifespan_increase_years/0.77:.1f}%)
+- Lifespan Increase: {model.intervention.lifespan_increase_years:.2f} years
+- Health Quality Improvement: {model.intervention.healthspan_improvement_percent:.1f}%
 - Healthcare Savings per Pound Improved: {format_currency(model.intervention.savings_per_lb)}
 
 ### 2.4 Analytical Methods
@@ -102,7 +106,8 @@ The analysis employs several quantitative approaches:
 1. **Direct Impact Calculation**: Deterministic calculations using base parameters
 2. **Monte Carlo Simulation**: Probabilistic analysis with parameter variations
 3. **Sensitivity Analysis**: Systematic parameter variation to assess result robustness
-4. **Age Stratification**: Demographic-specific impact assessment
+4. **QALY Assessment**: Quality-adjusted life year calculations
+5. **Healthcare Utilization**: Analysis of system-wide usage changes
 
 ## 3. Results
 
@@ -123,7 +128,7 @@ Healthcare\\ Savings = Population \\times (Muscle\\ Gain + Fat\\ Loss) \\times S
 ```
 
 ### 3.2 Lifespan Impact Analysis
-A {model.intervention.lifespan_increase_years/0.77:.1f}% increase in average lifespan produces substantial economic effects:
+The intervention produces substantial economic effects through increased lifespan:
 
 **GDP Impact**:
 - Total Impact: {format_currency(results['gdp_impact_trillions'] * 1e12)}
@@ -142,11 +147,27 @@ GDP\\ Impact = Population \\times Workforce\\ Fraction \\times Years\\ Gained \\
 
             = {format_currency(results['gdp_impact_trillions'] * 1e12)}
 
-Medicare\\ Savings = Beneficiaries \\times Annual\\ Cost \\times Improvement\\ Percentage
+Medicare\\ Savings = Beneficiaries \\times Annual\\ Cost \\times Health\\ Quality\\ Improvement
 
                   = {format_number(model.pop.medicare_beneficiaries)} \\times ${model.econ.annual_healthcare_cost:,.2f} \\times {model.intervention.healthspan_improvement_percent:.1f}\\%
 
                   = {format_currency(results['annual_medicare_impact_billions'] * 1e9)}
+```
+
+### 3.3 Quality of Life Impact
+The intervention significantly improves quality-adjusted life years:
+
+**QALY Gains**:
+- Total QALYs Gained: {format_number(results['qalys_gained'])}
+- Per-Person QALYs: {results['qalys_gained']/model.pop.target_population:.2f}
+
+**Calculation Methodology**:
+```math
+QALYs = Population \\times Lifespan\\ Increase \\times (1 + Quality\\ Improvement)
+
+      = {format_number(model.pop.target_population)} \\times {model.intervention.lifespan_increase_years:.2f} \\times (1 + {model.intervention.healthspan_improvement_percent/100:.2f})
+
+      = {format_number(results['qalys_gained'])}
 ```
 
 ## 4. Uncertainty Analysis"""
@@ -179,7 +200,8 @@ Medicare\\ Savings = Beneficiaries \\times Annual\\ Cost \\times Improvement\\ P
 ### 5.1 Key Findings
 1. The intervention shows substantial potential for healthcare cost reduction through improved body composition
 2. Lifespan increases could generate significant economic value through extended workforce participation
-3. Medicare savings provide additional economic benefits through reduced healthcare spending
+3. Quality of life improvements provide additional societal benefits
+4. Healthcare system benefits from reduced utilization
 
 ### 5.2 Limitations
 1. Model assumes uniform intervention effectiveness
@@ -191,19 +213,22 @@ Medicare\\ Savings = Beneficiaries \\times Annual\\ Cost \\times Improvement\\ P
 1. Significant potential for healthcare cost reduction
 2. Positive impact on workforce productivity and GDP
 3. Opportunity for Medicare spending optimization
-4. Need for careful implementation planning and monitoring
+4. Quality of life improvements for aging population
+5. Need for careful implementation planning and monitoring
 
 ## 6. Conclusions
-The analysis demonstrates substantial potential economic benefits from the intervention:
+The analysis demonstrates substantial potential benefits from the intervention:
 1. Annual healthcare savings in the billions
 2. Significant GDP impact from increased productive lifespan
 3. Notable Medicare cost reductions
-4. Robust results across various uncertainty scenarios
+4. Meaningful QALY improvements
+5. Robust results across various uncertainty scenarios
 
 ## 7. Recommendations
 1. Consider pilot implementation to validate assumptions
 2. Develop detailed demographic-specific impact models
 3. Create monitoring framework for actual vs. projected benefits
-4. Establish ongoing cost-effectiveness evaluation process"""
+4. Establish ongoing cost-effectiveness evaluation process
+5. Design studies to refine quality of life impact estimates"""
 
     return report 

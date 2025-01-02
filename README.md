@@ -1,130 +1,202 @@
-# Health and Economic Impact Simulator
+# Health Economic Impact Simulator
 
 This project calculates the health and economic impact of therapeutic interventions, with a focus on Medicare spending implications.
 
 ## How it works
 
 The simulator:
-1. Takes a therapeutic intervention (e.g. Follistatin, Klotho, Thymosin-alpha-1)
-2. Allows input of key biomarkers and metrics:
-   - Physical metrics (muscle mass, fat mass)
-   - Biomarkers (eGFR, cystatin C)
-   - Cognitive measures (IQ changes)
-   - Disease progression rates (e.g. Alzheimer's, kidney disease)
-   - Lifespan changes
-3. Analyzes impact across different population segments:
-   - Total US population
-   - Age-specific groups (e.g. over 60)
-   - Adult population
-4. Calculates economic outcomes focused on:
-   - Medicare total annual spending changes
-   - GDP impact
+1. Takes a therapeutic intervention (e.g. Follistatin, Klotho)
+2. Analyzes intervention effects across multiple domains:
+   - Physical changes (muscle mass, fat mass)
+   - Longevity impacts (lifespan increase)
+   - Biomarker changes (eGFR, cystatin C)
+   - Healthcare utilization (hospital visits)
+3. Calculates economic impacts:
+   - Medicare spending changes
+   - GDP impact from increased lifespan
    - Healthcare system cost savings
-5. Provides a simple web interface to:
-   - Modify parameters in real-time
-   - View results and projections
-   - Export data for study design and reporting
+4. Performs uncertainty analysis:
+   - Monte Carlo simulations
+   - Parameter sensitivity analysis
+   - Confidence intervals
 
-## Developer Implementation Guide
+## Configuration Structure
 
-
-### Intervention YAML Structure
+### Base Parameters (`config/base_parameters.yml`)
 ```yaml
-name: "Follistatin"
-description: "Muscle growth and fat reduction therapeutic"
-default_effects:
-  muscle_mass_change: 2.0  # lbs
-  fat_mass_change: -2.0    # lbs
-  lifespan_increase: 2.5   # percentage
-  biomarkers:
-    egfr_change: 5.0
-    cystatin_c_change: -0.2
+population:
+  total_us: 331900000    # Total US population
+  over_60: 73000000      # Population over 60
+  adult: 258300000       # Adult population (18+)
+
+economics:
+  medicare_per_capita: 12500     # Annual Medicare spending per beneficiary
+  gdp_per_capita: 65000         # US GDP per capita
+  alzheimers_annual_cost: 355B  # Total US annual cost
+  ckd_annual_cost: 87B         # Total US annual cost
+
+health_baselines:
+  hospital_visits_per_year: 0.125  # Average per person
+  average_lifespan: 79.1          # Years
+  medicare_enrollment_rate: 0.186  # Percentage of population
 ```
 
-### Single Page Layout
-1. Intervention selector dropdown
-2. Parameter adjustment panel
-3. Real-time results display
-4. Report generation button
+### Intervention Configuration (`config/interventions/*.yml`)
+```yaml
+name: "Intervention Name"
+description: "Brief description of mechanism"
 
-## Input Parameters
+default_effects:
+  physical:
+    muscle_mass_change: 2.0  # lbs (positive = gain)
+    fat_mass_change: -2.0    # lbs (negative = loss)
+    
+  longevity:
+    lifespan_increase: 2.5   # percentage
+    
+  biomarkers:
+    egfr_change: 5.0         # mL/min/1.73m²
+    cystatin_c_change: -0.2  # mg/L
 
-### Population Parameters
-- Total population size
-- Age distribution
-- Current Medicare spending per capita
-- Current GDP per capita
-- Baseline health metrics by age group
+  healthcare:
+    hospital_visit_reduction: 15.0  # percentage reduction
+    
+impact_modifiers:
+  muscle_to_falls: 0.1       # Falls reduced per lb muscle
+  lifespan_to_gdp: 0.8      # GDP impact fraction
+  health_quality: 0.05      # QALY improvement
+  kidney_to_medicare: 0.10  # Medicare cost reduction
+```
 
-### Intervention Effects
-- Muscle mass change (lbs)
-- Fat mass change (lbs)
-- Lifespan increase (%)
-- IQ change (points)
-- Disease progression modifiers (%)
-- Biomarker changes:
-  - eGFR change
-  - Cystatin C change
+## Economic Impact Calculations
 
-## Output Calculations
+### Medicare Spending Impact
+```
+Annual Medicare Savings = 
+    Medicare Beneficiaries × 
+    Annual Cost per Beneficiary × 
+    (Health Quality Improvement + Biomarker Impact)
 
-### Economic Impact
-1. Medicare Spending Change ($)
-   ```
-   Δ Medicare = Population × (Current Medicare per capita × Health Impact Modifier)
-   ```
+Where:
+- Health Quality Improvement = impact_modifiers.health_quality
+- Biomarker Impact = kidney_to_medicare × normalized_biomarker_change
+```
 
-2. GDP Impact ($)
-   ```
-   Δ GDP = Population × (GDP per capita × Lifespan Increase × Productivity Modifier)
-   ```
+### GDP Impact
+```
+GDP Impact = 
+    Target Population × 
+    Workforce Fraction × 
+    GDP per Capita × 
+    Lifespan Increase × 
+    Lifespan to GDP Modifier × 
+    Discount Factor
 
-3. QALYs
-   ```
-   Δ QALYs = Population × (Lifespan Change + Health Quality Modifier)
-   ```
+Where:
+- Lifespan Increase = default_effects.longevity.lifespan_increase
+- Lifespan to GDP Modifier = impact_modifiers.lifespan_to_gdp
+- Discount Factor accounts for future value depreciation
+```
 
-### Health Metrics
-1. Population Health Impact
-   ```
-   Total Health Benefit = Σ(Individual Benefits × Population Distribution)
-   ```
+### Healthcare Cost Savings
+```
+Annual Healthcare Savings = 
+    Target Population × 
+    (Muscle Mass Change + Fat Mass Change) × 
+    Savings per Pound
 
-2. Healthcare Utilization
-   ```
-   Δ Hospital Visits = Population × (Baseline Rate × Health Impact Modifier)
-   ```
+Additional Savings from Hospital Reduction =
+    Population × 
+    Baseline Hospital Visits × 
+    Hospital Visit Reduction × 
+    Cost per Visit
+```
 
-## Report Format
+## Generated Reports
 
-The generated report will include:
+Reports are automatically generated for each intervention in `reports/generated/` with filenames encoding key parameters:
+```
+{intervention_name}_m{muscle_change}lb_f{fat_change}lb_l{lifespan_increase}pct.md
+```
+
+Each report includes:
 1. Executive Summary
-   - Intervention name and description
-   - Key findings in bullet points
-2. Economic Impact Section
-   - Medicare savings projections
-   - GDP impact estimates
-3. Health Impact Section
-   - Population health benefits
-   - Healthcare system effects
-4. Methodology Summary
-   - Key parameters used
-   - Calculation approach
+   - Intervention description
+   - Key findings
+2. Methodology
+   - Population parameters
+   - Economic parameters
+   - Intervention parameters
+3. Results Analysis
+   - Healthcare savings
+   - GDP impact
+   - Medicare spending changes
+4. Uncertainty Analysis
+   - Monte Carlo results
+   - Parameter variations
+   - Confidence intervals
+5. Discussion & Recommendations
 
-## Key Features
+## Usage
 
-- Real-time calculation updates
-- Study data integration capabilities
-- Focus on Medicare spending implications
-- Population-level impact analysis
-- Designed to inform future clinical studies and research priorities
+1. Configure intervention parameters:
+```bash
+# Copy template
+cp config/interventions/template.yml config/interventions/new_intervention.yml
 
-## Primary Metrics
+# Edit parameters
+edit config/interventions/new_intervention.yml
+```
 
-1. Changes in Medicare spending
-2. GDP impact
-3. Quality Adjusted Life Years (QALYs)
-4. Healthcare utilization metrics (e.g. hospital visits, hip fractures)
+2. Generate reports:
+```bash
+# Set Python path
+$env:PYTHONPATH = "."  # Windows
+export PYTHONPATH=.    # Unix
+
+# Generate reports
+python src/generate_report.py
+```
+
+## Adding New Interventions
+
+1. Create configuration file in `config/interventions/`
+2. Follow schema in `config/schema.json`
+3. Implement intervention-specific model (optional):
+   ```python
+   # models/new_intervention_model.py
+   from models.base_model import BaseImpactModel, BaseInterventionParams
+   
+   class NewInterventionParams(BaseInterventionParams):
+       # Add intervention-specific parameters
+   
+   class NewInterventionModel(BaseImpactModel):
+       # Add intervention-specific calculations
+   ```
+
+## Validation
+
+All configurations are validated against `config/schema.json`, which defines:
+- Required parameters
+- Valid value ranges
+- Parameter descriptions
+- Units of measurement
+
+## Future Enhancements
+
+Planned features:
+1. Additional impact pathways:
+   - Cognitive function (IQ changes)
+   - Disease progression modifiers
+   - Quality of life metrics
+2. Enhanced analysis:
+   - Age-stratified impacts
+   - Regional variations
+   - Demographic subgroups
+3. Integration capabilities:
+   - Clinical trial data import
+   - Real-time parameter updates
+   - Comparative intervention analysis
 
 
 
