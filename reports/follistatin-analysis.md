@@ -64,27 +64,27 @@ All calculations can be adjusted by changing the above inputs in the provided Py
 ## 4.2 Mathematical Formulation
 
 Let:
-- \(P\) = total U.S. population (e.g., \(P = 332 \times 10^6\)).
-- \( \Delta M\) = average muscle mass gain per individual (2 lb).
-- \( \Delta F\) = average fat mass loss per individual (2 lb).
-- \( S_{health}\) = average annual healthcare savings per pound of muscle gained and/or fat lost.
-  - This is a **per-person** cost-saving estimate. For illustration, we might say each pound of muscle gain plus each pound of fat lost yields \$10 in annual healthcare savings (completely hypothetical).
+- P = total U.S. population (e.g., P = 332 × 10^6)
+- ΔM = average muscle mass gain per individual (2 lb)
+- ΔF = average fat mass loss per individual (2 lb)
+- S_health = average annual healthcare savings per pound of muscle gained and/or fat lost
+  - This is a **per-person** cost-saving estimate. For illustration, we might say each pound of muscle gain plus each pound of fat lost yields $10 in annual healthcare savings (completely hypothetical).
 
 Then the **cumulative annual savings** from the therapy in terms of direct healthcare costs could be approximated by:
 
-\[
-\text{Annual Savings} = P \times (\Delta M + \Delta F) \times S_{health}
-\]
+```
+Annual Savings = P × (ΔM + ΔF) × S_health
+```
 
 For example, if:
-- \( S_{health} = \$10\) per pound improved,
-- \(\Delta M = 2\) lb, 
-- \(\Delta F = 2\) lb, 
-- \(P = 332 \times 10^6\),
+- S_health = $10 per pound improved
+- ΔM = 2 lb
+- ΔF = 2 lb
+- P = 332 × 10^6
 
-\[
-\text{Annual Savings} = 332 \times 10^6 \times (2 + 2) \times \$10 = 332 \times 10^6 \times 4 \times \$10 = \$13.28 \text{ billion}
-\]
+```
+Annual Savings = 332 × 10^6 × (2 + 2) × $10 = 332 × 10^6 × 4 × $10 = $13.28 billion
+```
 
 *This is a simplistic model; in reality, you would differentiate between the value of muscle mass vs. fat mass changes and their specific cost impacts.*
 
@@ -104,26 +104,26 @@ If the therapy improves metabolic health, it may extend healthy lifespan. A 2.5%
 
 ## 5.2 GDP Impact
 Let:
-- \( \Delta L \) = average increase in lifespan (in years).
-- \( W \) = average annual worker contribution to GDP. 
-- \( R \) = fraction of the population still in the workforce.
-- \( d\% \) = discount rate to account for the time value of money, future productivity changes, etc.
+- ΔL = average increase in lifespan (in years)
+- W = average annual worker contribution to GDP
+- R = fraction of the population still in the workforce
+- d% = discount rate to account for the time value of money, future productivity changes, etc.
 
 A rough estimate of the added GDP from increased lifespan (assuming people remain in or partially in the workforce longer) might be:
 
-\[
-\text{Added GDP} = P \times R \times \Delta L \times W \times \left(\frac{1}{1 + d}\right)^{\Delta L}
-\]
+```
+Added GDP = P × R × ΔL × W × (1 / (1 + d))^ΔL
+```
 
 For simplicity (and ignoring discounting for a moment), if:
-- \(\Delta L = 1.925 \text{ years}\),
-- \(W = \$70{,}000\) average annual productivity,
-- \(P = 332 \times 10^6\),
-- \(R \approx 50\%\) (since not everyone is working due to retirees, children, etc.),
+- ΔL = 1.925 years
+- W = $70,000 average annual productivity
+- P = 332 × 10^6
+- R ≈ 50% (since not everyone is working due to retirees, children, etc.)
 
-\[
-\text{Added GDP} \approx 332 \times 10^6 \times 0.5 \times 1.925 \times \$70{,}000 \approx \$22.45 \text{ trillion (cumulative over those extra years)}
-\]
+```
+Added GDP ≈ 332 × 10^6 × 0.5 × 1.925 × $70,000 ≈ $22.45 trillion (cumulative over those extra years)
+```
 
 *This figure is a *very* rough, non-discounted estimate covering the entire extended lifespan. In a real model, discount rates, retirement ages, and partial productivity in older age must be considered.*
 
@@ -132,23 +132,23 @@ For simplicity (and ignoring discounting for a moment), if:
   Extending healthy lifespan could shift or reduce per-capita spending on chronic diseases.  
 
 We can define:
-- \( C_{\text{annual}} \) = average annual Medicare cost per beneficiary (~\$14,000/year, placeholder).
-- \( \delta \% \) = percentage reduction in annual Medicare cost due to improved healthspan.
+- C_annual = average annual Medicare cost per beneficiary (~$14,000/year, placeholder)
+- δ% = percentage reduction in annual Medicare cost due to improved healthspan
 
 If each beneficiary consumes 5% less Medicare resources per year (due to lower chronic disease burden), the annual Medicare savings are:
 
-\[
-\text{Annual Medicare Savings} = ( \text{Medicare Population} ) \times C_{\text{annual}} \times \delta \%
-\]
+```
+Annual Medicare Savings = (Medicare Population) × C_annual × δ%
+```
 
 For instance, if:
-- Medicare Population = \(64 \times 10^6\),
-- \( C_{\text{annual}} = \$14{,}000 \),
-- \( \delta \% = 5\% = 0.05\),
+- Medicare Population = 64 × 10^6
+- C_annual = $14,000
+- δ% = 5% = 0.05
 
-\[
-\text{Annual Medicare Savings} = 64 \times 10^6 \times \$14{,}000 \times 0.05 \approx \$44.8 \text{ billion per year}
-\]
+```
+Annual Medicare Savings = 64 × 10^6 × $14,000 × 0.05 ≈ $44.8 billion per year
+```
 
 Again, these estimates would be refined with real data from clinical trials.
 
