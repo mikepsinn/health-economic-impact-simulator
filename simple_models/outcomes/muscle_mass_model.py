@@ -4,8 +4,9 @@ from datetime import datetime
 import os
 
 class MuscleMassInterventionModel:
-    def __init__(self, muscle_mass_increase_lbs):
+    def __init__(self, muscle_mass_increase_lbs, population_size=100000):
         self.muscle_mass_increase = muscle_mass_increase_lbs
+        self.population_size = population_size
         self.baseline_metrics = {
             'resting_metabolic_rate': 1800,  # calories per day
             'insulin_sensitivity': 1.0,      # relative scale
@@ -36,7 +37,10 @@ class MuscleMassInterventionModel:
             'mortality_reduction': mortality_reduction
         }
     
-    def calculate_economic_impact(self, population_size=100000):
+    def calculate_economic_impact(self, population_size=None):
+        # Use instance population_size if none provided
+        population_size = population_size or self.population_size
+        
         # Calculate healthcare savings
         fall_reduction = self.calculate_health_outcomes()['fall_risk_reduction']
         prevented_falls = self.baseline_metrics['fall_risk'] * fall_reduction * population_size
@@ -66,7 +70,10 @@ class MuscleMassInterventionModel:
             'long_term_savings': long_term_savings
         }
     
-    def generate_report(self, population_size=100000):
+    def generate_report(self, population_size=None):
+        # Use instance population_size if none provided
+        population_size = population_size or self.population_size
+        
         metabolic = self.calculate_metabolic_impact()
         health = self.calculate_health_outcomes()
         economic = self.calculate_economic_impact(population_size)

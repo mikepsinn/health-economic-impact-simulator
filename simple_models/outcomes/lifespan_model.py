@@ -8,7 +8,7 @@ class LifespanImpactModel:
         self.medicare_total_annual_spend = 829000000000  # Total Medicare spend in USD [CMS, 2023]
         self.discount_rate = 0.03  # [White House CEA, 2023]
         
-    def calculate_impacts(self, lifespan_increase_pct):
+    def calculate_impacts(self, lifespan_increase_pct, population_size=100000):
         """Calculate economic impacts of lifespan increase"""
         # Validate input
         if not (0 <= lifespan_increase_pct <= 100):
@@ -22,14 +22,14 @@ class LifespanImpactModel:
         
         # GDP impact (additional productive years), discounted
         productive_years = additional_years * self.workforce_participation
-        gdp_impact = productive_years * self.gdp_per_capita * discount_factor
+        gdp_impact = productive_years * self.gdp_per_capita * discount_factor * population_size
         
         # Healthcare savings (Medicare + private insurance), discounted
-        medicare_savings = additional_years * self.medicare_spending * discount_factor
-        private_insurance_savings = additional_years * (self.medicare_spending * 0.8) * discount_factor # Estimate private insurance costs
+        medicare_savings = additional_years * self.medicare_spending * discount_factor * population_size
+        private_insurance_savings = additional_years * (self.medicare_spending * 0.8) * discount_factor * population_size # Estimate private insurance costs
         
         # Social security impact (delayed payouts), discounted
-        social_security_savings = additional_years * 15000 * discount_factor # Average annual SS benefit
+        social_security_savings = additional_years * 15000 * discount_factor * population_size # Average annual SS benefit
         
         # Medicare total annual spend impact (based on mortality reduction)
         medicare_spend_impact = self.medicare_total_annual_spend * (lifespan_increase_pct / 100) * discount_factor
@@ -44,13 +44,14 @@ class LifespanImpactModel:
             'private_insurance_savings': private_insurance_savings,
             'social_security_savings': social_security_savings,
             'medicare_spend_impact': medicare_spend_impact,
-            'total_economic_impact': total_economic_impact
+            'total_economic_impact': total_economic_impact,
+            'population_size': population_size
         }
 
-def generate_report(lifespan_increase_pct, save_to_file=False):
+def generate_report(lifespan_increase_pct, population_size=100000, save_to_file=False):
     """Generate detailed government report of impacts"""
     model = LifespanImpactModel()
-    results = model.calculate_impacts(lifespan_increase_pct)
+    results = model.calculate_impacts(lifespan_increase_pct, population_size)
     
     # Calculate all required values first
     additional_years = results['additional_years']
@@ -60,11 +61,11 @@ def generate_report(lifespan_increase_pct, save_to_file=False):
 # Lifespan Impact Analysis Report
 
 ## Executive Summary
-Analysis of economic impacts from a **{lifespan_increase_pct}%** increase in lifespan, focusing on GDP contribution and Medicare impacts. Based on current demographic and economic data from authoritative sources.
+Analysis of economic impacts from a **{lifespan_increase_pct}%** increase in lifespan across a population of **{population_size:,}** individuals, focusing on GDP contribution and Medicare impacts. Based on current demographic and economic data from authoritative sources.
 
 ## Methodology & Calculations
 
-### 1. Additional Years of Life
+### 1. Additional Years of Life (Per Person)
 ```
 additional_years = base_life_expectancy × (lifespan_increase_pct / 100)
 = {model.base_life_expectancy} × ({lifespan_increase_pct}/100)
@@ -78,35 +79,35 @@ discount_factor = 1 / (1 + discount_rate)^additional_years
 = {1 / (1 + model.discount_rate)**additional_years:.4f}
 ```
 
-### 3. GDP Impact (Discounted)
+### 3. GDP Impact (Population-wide, Discounted)
 ```
 productive_years = additional_years × workforce_participation
 = {additional_years:.1f} × {model.workforce_participation}
-= {productive_years:.1f} years
+= {productive_years:.1f} years per person
 
-gdp_impact = productive_years × gdp_per_capita × discount_factor
-= {productive_years:.1f} × {model.gdp_per_capita} × {1 / (1 + model.discount_rate)**additional_years:.4f}
+gdp_impact = productive_years × gdp_per_capita × discount_factor × population_size
+= {productive_years:.1f} × {model.gdp_per_capita} × {1 / (1 + model.discount_rate)**additional_years:.4f} × {population_size:,}
 = ${results['gdp_impact']:,.0f}
 ```
 
-### 4. Medicare Savings (Discounted)
+### 4. Medicare Savings (Population-wide, Discounted)
 ```
-medicare_savings = additional_years × medicare_spending × discount_factor
-= {additional_years:.1f} × {model.medicare_spending} × {1 / (1 + model.discount_rate)**additional_years:.4f}
+medicare_savings = additional_years × medicare_spending × discount_factor × population_size
+= {additional_years:.1f} × {model.medicare_spending} × {1 / (1 + model.discount_rate)**additional_years:.4f} × {population_size:,}
 = ${results['medicare_savings']:,.0f}
 ```
 
-### 5. Private Insurance Savings (Discounted)
+### 5. Private Insurance Savings (Population-wide, Discounted)
 ```
-private_insurance_savings = additional_years × (medicare_spending × 0.8) × discount_factor
-= {additional_years:.1f} × ({model.medicare_spending} × 0.8) × {1 / (1 + model.discount_rate)**additional_years:.4f}
+private_insurance_savings = additional_years × (medicare_spending × 0.8) × discount_factor × population_size
+= {additional_years:.1f} × ({model.medicare_spending} × 0.8) × {1 / (1 + model.discount_rate)**additional_years:.4f} × {population_size:,}
 = ${results['private_insurance_savings']:,.0f}
 ```
 
-### 6. Social Security Savings (Discounted)
+### 6. Social Security Savings (Population-wide, Discounted)
 ```
-social_security_savings = additional_years × 15000 × discount_factor
-= {additional_years:.1f} × 15000 × {1 / (1 + model.discount_rate)**additional_years:.4f}
+social_security_savings = additional_years × 15000 × discount_factor × population_size
+= {additional_years:.1f} × 15000 × {1 / (1 + model.discount_rate)**additional_years:.4f} × {population_size:,}
 = ${results['social_security_savings']:,.0f}
 ```
 
@@ -117,7 +118,7 @@ medicare_spend_impact = medicare_total_annual_spend × (lifespan_increase_pct / 
 = ${results['medicare_spend_impact']:,.0f}
 ```
 
-### 8. Total Economic Impact (Discounted)
+### 8. Total Economic Impact (Population-wide, Discounted)
 ```
 total_economic_impact = gdp_impact + medicare_savings + private_insurance_savings + social_security_savings
 = {results['gdp_impact']:,.0f} + {results['medicare_savings']:,.0f} + {results['private_insurance_savings']:,.0f} + {results['social_security_savings']:,.0f}
@@ -127,6 +128,7 @@ total_economic_impact = gdp_impact + medicare_savings + private_insurance_saving
 ## Input Parameters
 | Parameter | Value | Source |
 |-----------|-------|---------|
+| Population Size | {population_size:,} | Model Input |
 | Lifespan Increase | {lifespan_increase_pct}% | Model Input |
 | Base Life Expectancy | {model.base_life_expectancy} years | CDC, 2023 |
 | GDP per Capita | ${model.gdp_per_capita:,.0f} | BEA, 2023 |
@@ -136,11 +138,11 @@ total_economic_impact = gdp_impact + medicare_savings + private_insurance_saving
 | Discount Rate | {model.discount_rate*100:.0f}% | White House CEA, 2023 |
 
 ## Results Summary
-*All values discounted at {model.discount_rate*100:.0f}% per year*
+*All values discounted at {model.discount_rate*100:.0f}% per year for population of {population_size:,}*
 
 | Metric | Value |
 |--------|--------|
-| Additional Years of Life | {results['additional_years']:.1f} years |
+| Additional Years of Life (per person) | {results['additional_years']:.1f} years |
 | GDP Impact | ${results['gdp_impact']:,.0f} |
 | Medicare Savings | ${results['medicare_savings']:,.0f} |
 | Private Insurance Savings | ${results['private_insurance_savings']:,.0f} |
@@ -153,6 +155,7 @@ The model demonstrates:
 - Linear relationship between lifespan increase and economic benefits
 - Greatest impact seen in workforce participation rate
 - Medicare savings scale proportionally with additional years
+- Population size directly scales all economic impacts except Medicare total annual spend
 
 ## Data Sources & References
 
@@ -191,4 +194,4 @@ The model demonstrates:
 # Example usage
 if __name__ == "__main__":
     # Save report to markdown file
-    generate_report(2.5, save_to_file=True)  # Example with 10% lifespan increase
+    generate_report(2.5, population_size=100000, save_to_file=True)
