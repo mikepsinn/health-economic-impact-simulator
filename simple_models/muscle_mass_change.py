@@ -13,6 +13,7 @@ class MuscleMassInterventionModel:
             'healthcare_costs': 11000,       # annual per person
             'disability_risk': 0.10,         # annual probability
             'mortality_risk': 0.02,          # annual probability
+            'medicare_total_annual_spend': 829000000000,  # Total Medicare spend in USD (2021 data)
         }
         
     def calculate_metabolic_impact(self):
@@ -48,6 +49,10 @@ class MuscleMassInterventionModel:
         # Calculate QALYs gained
         qalys_gained = self.muscle_mass_increase * 0.02 * population_size
         
+        # Calculate Medicare total annual spend impact based on mortality reduction
+        mortality_reduction = self.calculate_health_outcomes()['mortality_reduction']
+        medicare_spend_impact = self.baseline_metrics['medicare_total_annual_spend'] * mortality_reduction
+        
         # Calculate long-term savings (10-year projection)
         discount_rate = 0.03
         long_term_savings = (fall_cost_savings + total_productivity_gain) * ((1 - (1 + discount_rate)**-10) / discount_rate)
@@ -57,6 +62,7 @@ class MuscleMassInterventionModel:
             'productivity_gains': total_productivity_gain,
             'total_economic_benefit': fall_cost_savings + total_productivity_gain,
             'qalys_gained': qalys_gained,
+            'medicare_spend_impact': medicare_spend_impact,
             'long_term_savings': long_term_savings
         }
     
@@ -73,6 +79,7 @@ class MuscleMassInterventionModel:
         qalys_gained = self.muscle_mass_increase * 0.02 * population_size
         discount_rate = 0.03
         long_term_savings = (fall_cost_savings + total_productivity_gain) * ((1 - (1 + discount_rate)**-10) / discount_rate)
+        medicare_spend_impact = economic['medicare_spend_impact']
         
         report = f"""
 # Muscle Mass Intervention Analysis Report
@@ -94,6 +101,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d')}
 ## Economic Impact (Annual)
 - Healthcare Cost Savings: ${economic['healthcare_savings']:,.2f}
 - Productivity Gains: ${economic['productivity_gains']:,.2f}
+- Medicare Total Annual Spend Impact: ${economic['medicare_spend_impact']:,.2f}
 - Total Economic Benefit: ${economic['total_economic_benefit']:,.2f}
 
 ## Model Calculations Explained
@@ -138,12 +146,16 @@ Generated on: {datetime.now().strftime('%Y-%m-%d')}
    - Formula: Muscle Mass Increase × 0.02 QALYs/person × Population
    - Example: {self.muscle_mass_increase} × 0.02 × {population_size:,} = {qalys_gained:,.0f} QALYs
 
-4. **Long-Term Savings (10-Year Projection)**:
+4. **Medicare Total Annual Spend Impact**:
+   - Formula: Medicare Total Annual Spend × Mortality Risk Reduction
+   - Example: ${self.baseline_metrics['medicare_total_annual_spend']:,.0f} × {health['mortality_reduction']:.3f} = ${medicare_spend_impact:,.2f}
+
+5. **Long-Term Savings (10-Year Projection)**:
    - Formula: (Annual Savings + Productivity Gains) × Discount Factor
      Discount Factor = (1 - (1 + r)^-n) / r
      Where r = 3% discount rate, n = 10 years
    - Example:
-     (${fall_cost_savings:,.2f} + ${total_productivity_gain:,.2f}) × {((1 - (1 + 0.03)**-10) / 0.03):.2f} = ${long_term_savings:,.2f}
+     (${fall_cost_savings:,.2f} + ${total_productivity_gain:,.2f}) × {((1 - (1 + discount_rate)**-10) / discount_rate):.2f} = ${long_term_savings:,.2f}
 
 ## Research-Backed Methodology & Citations
 
@@ -260,10 +272,11 @@ The mortality predictions in our model are based on robust statistical analyses 
 """
         return report
 
-    def save_report(self, output_path='reports', filename=None):
-        """Save the report to a markdown file."""
-        # Create reports directory if it doesn't exist
-        os.makedirs(output_path, exist_ok=True)
+    def save_report(self, output_path='.', filename=None):
+        """Save the report to a markdown file in the current directory by default."""
+        # Create output directory if it doesn't exist and it's not the current directory
+        if output_path != '.':
+            os.makedirs(output_path, exist_ok=True)
         
         # Generate default filename if none provided
         if filename is None:

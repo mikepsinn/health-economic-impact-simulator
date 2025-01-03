@@ -18,6 +18,7 @@ Generated on: 2025-01-02
 ## Economic Impact (Annual)
 - Healthcare Cost Savings: $4,500,000.00
 - Productivity Gains: $20,000,000.00
+- Medicare Total Annual Spend Impact: $16,580,000,000.00
 - Total Economic Benefit: $24,500,000.00
 
 ## Model Calculations Explained
@@ -62,7 +63,11 @@ Generated on: 2025-01-02
    - Formula: Muscle Mass Increase × 0.02 QALYs/person × Population
    - Example: 2 × 0.02 × 100,000 = 4,000 QALYs
 
-4. **Long-Term Savings (10-Year Projection)**:
+4. **Medicare Total Annual Spend Impact**:
+   - Formula: Medicare Total Annual Spend × Mortality Risk Reduction
+   - Example: $829,000,000,000 × 0.020 = $16,580,000,000.00
+
+5. **Long-Term Savings (10-Year Projection)**:
    - Formula: (Annual Savings + Productivity Gains) × Discount Factor
      Discount Factor = (1 - (1 + r)^-n) / r
      Where r = 3% discount rate, n = 10 years

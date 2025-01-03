@@ -5,6 +5,7 @@ class LifespanImpactModel:
         self.gdp_per_capita = 70000     # USD
         self.workforce_participation = 0.62
         self.medicare_spending = 12000  # USD/year
+        self.medicare_total_annual_spend = 829000000000  # Total Medicare spend in USD (2021 data)
         self.discount_rate = 0.03
         
     def calculate_impacts(self, lifespan_increase_pct):
@@ -30,6 +31,9 @@ class LifespanImpactModel:
         # Social security impact (delayed payouts), discounted
         social_security_savings = additional_years * 15000 * discount_factor # Average annual SS benefit
         
+        # Medicare total annual spend impact (based on mortality reduction)
+        medicare_spend_impact = self.medicare_total_annual_spend * (lifespan_increase_pct / 100) * discount_factor
+        
         # Total economic impact, discounted
         total_economic_impact = gdp_impact + medicare_savings + private_insurance_savings + social_security_savings
         
@@ -39,6 +43,7 @@ class LifespanImpactModel:
             'medicare_savings': medicare_savings,
             'private_insurance_savings': private_insurance_savings,
             'social_security_savings': social_security_savings,
+            'medicare_spend_impact': medicare_spend_impact,
             'total_economic_impact': total_economic_impact
         }
 
@@ -58,7 +63,7 @@ Lifespan Impact Analysis Report
 Executive Summary
 -----------------
 This report analyzes the economic impact of a {lifespan_increase_pct}% increase in lifespan,
-focusing on GDP contribution and Medicare savings. The analysis is based on current
+focusing on GDP contribution and Medicare impacts. The analysis is based on current
 demographic and economic data from authoritative sources.
 
 Methodology
@@ -99,7 +104,12 @@ The model calculates economic impacts through the following steps:
    = {additional_years:.1f} * 15000 * {1 / (1 + model.discount_rate)**additional_years:.4f}
    = ${results['social_security_savings']:,.0f}
 
-7. Calculate Total Economic Impact (discounted):
+7. Calculate Medicare Total Annual Spend Impact (discounted):
+   medicare_spend_impact = medicare_total_annual_spend * (lifespan_increase_pct / 100) * discount_factor
+   = {model.medicare_total_annual_spend:,.0f} * ({lifespan_increase_pct}/100) * {1 / (1 + model.discount_rate)**additional_years:.4f}
+   = ${results['medicare_spend_impact']:,.0f}
+
+8. Calculate Total Economic Impact (discounted):
    total_economic_impact = gdp_impact + medicare_savings + private_insurance_savings + social_security_savings
    = {results['gdp_impact']:,.0f} + {results['medicare_savings']:,.0f} + {results['private_insurance_savings']:,.0f} + {results['social_security_savings']:,.0f}
    = ${results['total_economic_impact']:,.0f}
@@ -121,6 +131,7 @@ Input Parameters
 - GDP per Capita: ${model.gdp_per_capita:,.0f} [World Bank, 2023]
 - Workforce Participation: {model.workforce_participation*100:.0f}% [BLS, 2023]
 - Annual Medicare Spending: ${model.medicare_spending:,.0f} [CMS, 2023]
+- Total Medicare Annual Spend: ${model.medicare_total_annual_spend:,.0f} [CMS, 2021]
 - Discount Rate: {model.discount_rate*100:.0f}% [Standard economic practice]
 
 Results (All values are discounted at {model.discount_rate*100:.0f}% per year)
@@ -130,6 +141,7 @@ Results (All values are discounted at {model.discount_rate*100:.0f}% per year)
 - Medicare Savings: ${results['medicare_savings']:,.0f} (discounted)
 - Private Insurance Savings: ${results['private_insurance_savings']:,.0f} (discounted)
 - Social Security Savings: ${results['social_security_savings']:,.0f} (discounted)
+- Medicare Total Annual Spend Impact: ${results['medicare_spend_impact']:,.0f} (discounted)
 - Total Economic Impact: ${results['total_economic_impact']:,.0f} (discounted)
 
 Sensitivity Analysis
