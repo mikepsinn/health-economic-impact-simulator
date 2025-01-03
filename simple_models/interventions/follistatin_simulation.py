@@ -3,53 +3,56 @@ from outcomes.lifespan_model import LifespanImpactModel, generate_report as gene
 import os
 from datetime import datetime
 
-def generate_follistatin_report(muscle_mass_lbs=2.0, lifespan_increase_pct=2.5, population_size=100000):
-    """Generate a comprehensive report on follistatin's impact combining muscle mass and lifespan effects"""
+def save_follistatin_reports(muscle_mass_lbs=2.0, lifespan_increase_pct=2.5, population_size=334000000, output_path='.'):
+    """Save separate follistatin reports for muscle mass and lifespan impacts"""
+    # Create follistatin output directory
+    follistatin_dir = os.path.join(output_path, 'reports', 'follistatin')
+    os.makedirs(follistatin_dir, exist_ok=True)
     
     # Initialize models
     muscle_model = MuscleMassInterventionModel(muscle_mass_lbs)
     lifespan_model = LifespanImpactModel()
     
-    # Get individual reports
+    # Generate and save muscle mass report
+    muscle_filename = f'follistatin_muscle_m+{muscle_mass_lbs}lb_p{population_size}.md'
+    muscle_filepath = os.path.join(follistatin_dir, muscle_filename)
     muscle_results = muscle_model.generate_report(population_size)
-    lifespan_results = generate_lifespan_report(lifespan_increase_pct, population_size)
     
-    # Create combined report
-    report = f"""
-# Follistatin Intervention Analysis Report
+    muscle_report = f"""# Follistatin Muscle Mass Impact Analysis
 Generated on: {datetime.now().strftime('%Y-%m-%d')}
 
 ## Study Parameters
 - Target Population: {population_size:,} individuals
 - Muscle Mass Increase: {muscle_mass_lbs} lbs per person
+
+{muscle_results}
+"""
+    
+    with open(muscle_filepath, 'w', encoding='utf-8') as f:
+        f.write(muscle_report)
+    
+    # Generate and save lifespan report
+    lifespan_filename = f'follistatin_lifespan_l{lifespan_increase_pct}pct_p{population_size}.md'
+    lifespan_filepath = os.path.join(follistatin_dir, lifespan_filename)
+    lifespan_results = generate_lifespan_report(lifespan_increase_pct, population_size)
+    
+    lifespan_report = f"""# Follistatin Lifespan Impact Analysis
+Generated on: {datetime.now().strftime('%Y-%m-%d')}
+
+## Study Parameters
+- Target Population: {population_size:,} individuals
 - Lifespan Increase: {lifespan_increase_pct}%
 
-## Muscle Mass Impact Analysis
-{muscle_results}
-
-## Lifespan Impact Analysis
 {lifespan_results}
 """
-    return report
-
-def save_follistatin_report(muscle_mass_lbs=2.0, lifespan_increase_pct=2.5, population_size=334000000, output_path='.'):
-    """Save the follistatin report to a markdown file"""
-    # Create output directory if it doesn't exist
-    if output_path != '.':
-        os.makedirs(output_path, exist_ok=True)
     
-    # Generate filename with all parameters
-    filename = f'follistatin_m+{muscle_mass_lbs}lb_l{lifespan_increase_pct}pct_p{population_size}.md'
-    filepath = os.path.join(output_path, filename)
+    with open(lifespan_filepath, 'w', encoding='utf-8') as f:
+        f.write(lifespan_report)
     
-    # Generate and save the report
-    report_content = generate_follistatin_report(muscle_mass_lbs, lifespan_increase_pct, population_size)
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(report_content)
-    
-    return filepath
+    return muscle_filepath, lifespan_filepath
 
 if __name__ == "__main__":
-    # Generate and save the report with default parameters
-    report_path = save_follistatin_report()
-    print(f"Report saved to: {report_path}") 
+    # Generate and save the reports with default parameters
+    muscle_path, lifespan_path = save_follistatin_reports()
+    print(f"Muscle mass report saved to: {muscle_path}")
+    print(f"Lifespan report saved to: {lifespan_path}") 
