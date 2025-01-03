@@ -17,34 +17,39 @@ The model calculates economic impacts through the following steps:
    = 79 * (2.5/100)
    = 2.0 years
 
-2. Calculate GDP Impact:
+2. Calculate Discount Factor:
+   discount_factor = 1 / (1 + discount_rate)^additional_years
+   = 1 / (1 + 0.03)^2.0
+   = 0.9433
+
+3. Calculate GDP Impact (discounted):
    productive_years = additional_years * workforce_participation
    = 2.0 * 0.62
    = 1.2 years
    
-   gdp_impact = productive_years * gdp_per_capita
-   = 1.2 * 70000
-   = $85,715
+   gdp_impact = productive_years * gdp_per_capita * discount_factor
+   = 1.2 * 70000 * 0.9433
+   = $80,854
 
-3. Calculate Medicare Savings:
-   medicare_savings = additional_years * medicare_spending
-   = 2.0 * 12000
-   = $23,700
+4. Calculate Medicare Savings (discounted):
+   medicare_savings = additional_years * medicare_spending * discount_factor
+   = 2.0 * 12000 * 0.9433
+   = $22,356
 
-4. Calculate Private Insurance Savings:
-   private_insurance_savings = additional_years * (medicare_spending * 0.8)
-   = 2.0 * (12000 * 0.8)
-   = $18,960
+5. Calculate Private Insurance Savings (discounted):
+   private_insurance_savings = additional_years * (medicare_spending * 0.8) * discount_factor
+   = 2.0 * (12000 * 0.8) * 0.9433
+   = $17,885
 
-5. Calculate Social Security Savings:
-   social_security_savings = additional_years * 15000
-   = 2.0 * 15000
-   = $29,625
+6. Calculate Social Security Savings (discounted):
+   social_security_savings = additional_years * 15000 * discount_factor
+   = 2.0 * 15000 * 0.9433
+   = $27,945
 
-6. Calculate Total Economic Impact:
+7. Calculate Total Economic Impact (discounted):
    total_economic_impact = gdp_impact + medicare_savings + private_insurance_savings + social_security_savings
-   = 85,715 + 23,700 + 18,960 + 29,625
-   = $158,000
+   = 80,854 + 22,356 + 17,885 + 27,945
+   = $149,040
 
 Data Sources:
 1. Life Expectancy: CDC National Vital Statistics Reports
@@ -63,15 +68,16 @@ Input Parameters
 - GDP per Capita: $70,000 [World Bank, 2023]
 - Workforce Participation: 62% [BLS, 2023]
 - Annual Medicare Spending: $12,000 [CMS, 2023]
+- Discount Rate: 3% [Standard economic practice]
 
-Results
+Results (All values are discounted at 3% per year)
 -------
 - Additional Years of Life: 2.0 years
-- GDP Impact: $85,715
-- Medicare Savings: $23,700
-- Private Insurance Savings: $18,960
-- Social Security Savings: $29,625
-- Total Economic Impact: $158,000
+- GDP Impact: $80,854 (discounted)
+- Medicare Savings: $22,356 (discounted)
+- Private Insurance Savings: $17,885 (discounted)
+- Social Security Savings: $27,945 (discounted)
+- Total Economic Impact: $149,040 (discounted)
 
 Sensitivity Analysis
 --------------------
