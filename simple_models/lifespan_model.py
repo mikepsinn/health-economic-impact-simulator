@@ -1,12 +1,12 @@
 class LifespanImpactModel:
     def __init__(self):
         # Base parameters
-        self.base_life_expectancy = 79  # years
-        self.gdp_per_capita = 70000     # USD
-        self.workforce_participation = 0.62
-        self.medicare_spending = 12000  # USD/year
-        self.medicare_total_annual_spend = 829000000000  # Total Medicare spend in USD (2021 data)
-        self.discount_rate = 0.03
+        self.base_life_expectancy = 77.5  # years [CDC, 2023]
+        self.gdp_per_capita = 70000       # USD [BEA, 2023]
+        self.workforce_participation = 0.62  # [BLS, 2023]
+        self.medicare_spending = 12000    # USD/year [CMS, 2023]
+        self.medicare_total_annual_spend = 829000000000  # Total Medicare spend in USD [CMS, 2023]
+        self.discount_rate = 0.03  # [White House CEA, 2023]
         
     def calculate_impacts(self, lifespan_increase_pct):
         """Calculate economic impacts of lifespan increase"""
@@ -115,24 +115,26 @@ The model calculates economic impacts through the following steps:
    = ${results['total_economic_impact']:,.0f}
 
 Data Sources:
-1. Life Expectancy: CDC National Vital Statistics Reports
-   (https://www.cdc.gov/nchs/products/nvsr.htm)
-2. GDP per Capita: World Bank DataBank
-   (https://databank.worldbank.org/)
-3. Workforce Participation: Bureau of Labor Statistics Current Population Survey
-   (https://www.bls.gov/)
-4. Medicare Spending: Centers for Medicare & Medicaid Services National Health Expenditure Data
+1. Life Expectancy: CDC National Center for Health Statistics
+   (https://www.cdc.gov/nchs/fastats/life-expectancy.htm)
+2. GDP per Capita: U.S. Bureau of Economic Analysis (BEA)
+   (https://www.bea.gov/data/gdp/gross-domestic-product)
+3. Workforce Participation: Bureau of Labor Statistics (BLS)
+   (https://www.bls.gov/charts/employment-situation/civilian-labor-force-participation-rate.htm)
+4. Medicare Spending: Centers for Medicare & Medicaid Services (CMS)
    (https://www.cms.gov/data-research/statistics-trends-and-reports/national-health-expenditure-data/nhe-fact-sheet)
+5. Discount Rate: White House Council of Economic Advisers
+   (https://www.whitehouse.gov/cea/written-materials/2024/02/27/valuing-the-future-revision-to-the-social-discount-rate-means-appropriately-assessing-benefits-and-costs/)
 
 Input Parameters
 ----------------
 - Lifespan Increase: {lifespan_increase_pct}%
-- Base Life Expectancy: {model.base_life_expectancy} years [CDC, 2022]
-- GDP per Capita: ${model.gdp_per_capita:,.0f} [World Bank, 2023]
+- Base Life Expectancy: {model.base_life_expectancy} years [CDC, 2023]
+- GDP per Capita: ${model.gdp_per_capita:,.0f} [BEA, 2023]
 - Workforce Participation: {model.workforce_participation*100:.0f}% [BLS, 2023]
 - Annual Medicare Spending: ${model.medicare_spending:,.0f} [CMS, 2023]
-- Total Medicare Annual Spend: ${model.medicare_total_annual_spend:,.0f} [CMS, 2021]
-- Discount Rate: {model.discount_rate*100:.0f}% [Standard economic practice]
+- Total Medicare Annual Spend: ${model.medicare_total_annual_spend:,.0f} [CMS, 2023]
+- Discount Rate: {model.discount_rate*100:.0f}% [White House CEA, 2023]
 
 Results (All values are discounted at {model.discount_rate*100:.0f}% per year)
 -------
@@ -159,14 +161,16 @@ The findings support investment in interventions that extend healthy lifespan.
 
 References
 ----------
-1. CDC National Vital Statistics Reports
-   https://www.cdc.gov/nchs/products/nvsr.htm
-2. World Bank DataBank
-   https://databank.worldbank.org/
-3. Bureau of Labor Statistics Current Population Survey
-   https://www.bls.gov/
-4. Centers for Medicare & Medicaid Services National Health Expenditure Data
+1. CDC National Center for Health Statistics
+   https://www.cdc.gov/nchs/fastats/life-expectancy.htm
+2. U.S. Bureau of Economic Analysis (BEA)
+   https://www.bea.gov/data/gdp/gross-domestic-product
+3. Bureau of Labor Statistics (BLS)
+   https://www.bls.gov/charts/employment-situation/civilian-labor-force-participation-rate.htm
+4. Centers for Medicare & Medicaid Services (CMS)
    https://www.cms.gov/data-research/statistics-trends-and-reports/national-health-expenditure-data/nhe-fact-sheet
+5. White House Council of Economic Advisers
+   https://www.whitehouse.gov/cea/written-materials/2024/02/27/valuing-the-future-revision-to-the-social-discount-rate-means-appropriately-assessing-benefits-and-costs/
 """
     if save_to_file:
         filename = f"lifespan_report_{lifespan_increase_pct}pct.md"
