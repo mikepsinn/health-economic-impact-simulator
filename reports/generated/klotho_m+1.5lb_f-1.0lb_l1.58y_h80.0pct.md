@@ -5,10 +5,10 @@
 A protein that regulates aging and metabolism
 
 ### Key Findings
-- Annual Healthcare System Savings: $8,722,332.00T
-- Total GDP Impact: $649.54B
-- Annual Medicare Cost Reduction: $5,330,748.79T
-- Quality-Adjusted Life Years Gained: 58,149,108,676,445
+- Annual Healthcare System Savings: $248.93B
+- Total GDP Impact: $564.23B
+- Annual Medicare Cost Reduction: $1,841,815.99T
+- Quality-Adjusted Life Years Gained: 29,008,060
 
 ## Study Design
 
@@ -29,121 +29,104 @@ The model uses the following primary data sources:
 ## Intervention Analysis
 
 ### Physical Impact Pathway
-- Muscle Mass Change: +1.5 lb
-- Fat Mass Change: -1.0 lb
-These changes affect:
-1. Healthcare utilization through improved mobility and reduced fall risk
-2. Quality of life through enhanced physical capability
-3. Healthcare costs through metabolic health improvements
+### Physical Impact Calculations
+Healthcare savings from body composition changes:
+
+```
+Muscle Savings = Population × Muscle_Change × $12/lb
+```
+Muscle-related savings: $2.99B
+
+```
+Fat Savings = Population × Fat_Change × $8/lb
+```
+Fat-related savings: $1.33B
+Total composition savings: $4.31B
+
 
 ### Cognitive Impact Pathway
-- IQ Increase: +2.5 points
-- Alzheimer's Progression Reduction: 15.0%
-These improvements lead to:
-1. Enhanced workforce productivity
-2. Reduced cognitive decline costs
-3. Improved quality of life
+### Cognitive Impact Calculations
+Economic gains from improved cognitive function:
+
+```
+GDP Impact = Population × IQ_Increase × IQ_to_GDP × Annual_Productivity
+```
+Annual GDP impact: $564.23B
+
+Medicare savings from reduced Alzheimer's progression:
+
+```
+Alzheimer's Savings = Beneficiaries × Reduction × Cost × Medicare_Impact
+```
+Annual Medicare savings: $1,412,151.52T
+
+Quality-adjusted life years gained from cognitive improvements:
+
+```
+QALYs = Population × (IQ_Effect + Alzheimer's_Effect) × Health_Quality
+```
+Total QALYs gained: 4,314,700
+
 
 ### Kidney Function Impact Pathway
-- eGFR Improvement: +8.0 mL/min/1.73m�
-- CKD Progression Reduction: 20.0%
-These improvements result in:
-1. Reduced kidney disease progression
-2. Lower dialysis and treatment costs
-3. Enhanced patient wellbeing
+### Kidney Function Impact Calculations
+Medicare savings from reduced CKD progression:
 
-### Longevity Impact Pathway
-- Lifespan Increase: 1.58 years
-- Health Quality Improvement: 80.0%
-These improvements contribute to:
-1. Extended workforce participation
-2. Increased lifetime earnings
-3. Enhanced quality of life
+```
+Medicare Savings = Beneficiaries × CKD_Reduction × Cost × Medicare_Impact
+```
+Annual Medicare savings: $429,664.46T
 
-### Healthcare System Impact
-- Hospital Visit Reduction: 12.0%
-This leads to:
-1. Reduced acute care costs
-2. Lower Medicare spending
-3. Improved healthcare system efficiency
+Quality-adjusted life years gained from kidney improvements:
+
+```
+QALYs = Population × (eGFR_Effect + CKD_Effect) × Health_Quality
+```
+Total QALYs gained: 23,896,800
+
+
+### Healthcare Utilization Impact
+### Healthcare Utilization Impact Calculations
+Savings from reduced hospital visits:
+
+```
+Visit Savings = Baseline_Visits × Visit_Reduction × Cost_per_Visit
+```
+Baseline annual visits: 18,250,000
+Visits reduced: 2,190,000
+Annual savings: $248.93B
+
+Quality-adjusted life years gained from reduced hospitalizations:
+
+```
+QALYs = Population × Visit_Reduction × Health_Effect × Quality_Factor
+```
+Total QALYs gained: 796,560
+
 
 ## Economic Impact Calculations
 
-### Healthcare Savings Calculation
+### Total Healthcare System Savings
+Sum of savings from all impact pathways:
+
 ```
-Annual Savings = Population * (Muscle_Mass_Change + Fat_Mass_Change) * Savings_per_lb +
-                Population * Baseline_Visits * Visit_Reduction * Cost_per_Visit
+Total Savings = Physical_Savings + Hospital_Savings + Medicare_Savings
 ```
-Composition-related savings: $995.70M
-Hospital visit reduction savings: $26.28B
-Total annual healthcare savings: $27.28B
+Annual healthcare system savings: $248.93B
 
-### GDP Impact Calculation
+### Total GDP Impact
+Economic gains from improved health and productivity:
+
 ```
-GDP Impact = Population * Workforce_Fraction * Lifespan_Increase *
-            Annual_Productivity * (1 / (1 + Discount_Rate)^(Years/2))
+GDP Impact = Cognitive_Impact + Longevity_Impact
 ```
-Additional productive years: 1.00
-Annual economic impact: $11.25T
-Discounted lifetime impact: $11.08T
+Total GDP impact: $564.23B
 
-### Medicare Impact Calculation
+### Quality-Adjusted Life Years
+Total health improvements across all pathways:
+
 ```
-Medicare Savings = Beneficiaries * Annual_Cost * Health_Improvement
+Total QALYs = Physical_QALYs + Cognitive_QALYs + Kidney_QALYs + Healthcare_QALYs
 ```
-Annual Medicare savings: $617.33B
+Total QALYs gained: 29,008,060
 
-### QALY Calculation
-```
-QALYs = Population * Lifespan_Increase * (1 + Quality_Improvement)
-```
-Total QALYs gained: 398,290,621
-
-## Population Impact
-
-### Target Population
-- Total US Population: 331,900,000
-- Target Population: 165,950,000
-- Medicare Beneficiaries: 61,733,400
-- Workforce Participation: 63.0%
-
-### Cost Basis
-- Annual Healthcare Cost: $12,500.00
-- Annual Productivity: $68,000.00
-- Discount Rate: 3.0%
-
-## Uncertainty Analysis
-
-### Key Assumptions
-1. Population response follows clinical trial results
-2. Economic benefits scale linearly with health improvements
-3. Workforce participation remains stable
-4. Healthcare costs follow historical trends
-
-### Risk Factors
-1. Variable individual response to intervention
-2. Economic condition fluctuations
-3. Healthcare system changes
-4. Demographic shifts
-
-## Conclusions
-
-### Economic Viability
-The intervention demonstrates significant economic benefits:
-- Per-person annual savings: $84.68B
-- Total annual system savings: $14,053,080.79T
-- Long-term GDP impact: $649.54B
-
-### Healthcare System Impact
-The intervention would significantly reduce healthcare system burden through:
-1. Reduced hospitalization rates
-2. Improved health outcomes
-3. Extended healthy lifespan
-4. Enhanced quality of life
-
-### Recommendations
-Based on this analysis, we recommend:
-1. Proceeding with intervention implementation
-2. Establishing monitoring systems for outcome tracking
-3. Developing scaled deployment strategies
-4. Creating long-term impact assessment frameworks
