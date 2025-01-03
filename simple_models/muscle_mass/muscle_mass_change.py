@@ -65,6 +65,15 @@ class MuscleMassInterventionModel:
         health = self.calculate_health_outcomes()
         economic = self.calculate_economic_impact(population_size)
         
+        # Get variables needed for detailed calculations
+        fall_reduction = health['fall_risk_reduction']
+        prevented_falls = self.baseline_metrics['fall_risk'] * fall_reduction * population_size
+        fall_cost_savings = prevented_falls * 10000
+        total_productivity_gain = self.muscle_mass_increase * 100 * population_size
+        qalys_gained = self.muscle_mass_increase * 0.02 * population_size
+        discount_rate = 0.03
+        long_term_savings = (fall_cost_savings + total_productivity_gain) * ((1 - (1 + discount_rate)**-10) / discount_rate)
+        
         report = f"""
 # Muscle Mass Intervention Analysis Report
 Generated on: {datetime.now().strftime('%Y-%m-%d')}
@@ -86,6 +95,55 @@ Generated on: {datetime.now().strftime('%Y-%m-%d')}
 - Healthcare Cost Savings: ${economic['healthcare_savings']:,.2f}
 - Productivity Gains: ${economic['productivity_gains']:,.2f}
 - Total Economic Benefit: ${economic['total_economic_benefit']:,.2f}
+
+## Model Calculations Explained
+
+### Metabolic Impact Calculations
+1. **Daily Calorie Burn**:
+   - Formula: Additional Calories = Muscle Mass Increase (lbs) × 8 calories/lb/day
+   - Example: {self.muscle_mass_increase} lbs × 8 = {metabolic['additional_daily_calories_burned']:.1f} calories/day
+   - Basis: Each pound of muscle burns ~6-10 calories/day at rest (midpoint = 8)
+
+2. **Annual Metabolic Impact**:
+   - Formula: Daily Calories × 365 days
+   - Example: {metabolic['additional_daily_calories_burned']:.1f} × 365 = {metabolic['annual_metabolic_impact']:,.0f} calories/year
+
+### Health Outcome Calculations
+1. **Insulin Sensitivity Improvement**:
+   - Formula: Muscle Mass Increase × 0.02 (2% improvement per lb)
+   - Example: {self.muscle_mass_increase} × 0.02 = {health['insulin_sensitivity_improvement']*100:.1f}%
+
+2. **Fall Risk Reduction**:
+   - Formula: min(30%, Muscle Mass Increase × 1.5%)
+   - Example: min(30%, {self.muscle_mass_increase} × 1.5%) = {health['fall_risk_reduction']*100:.1f}%
+
+3. **Mortality Risk Reduction**:
+   - Formula: min(20%, Muscle Mass Increase × 1%)
+   - Example: min(20%, {self.muscle_mass_increase} × 1%) = {health['mortality_reduction']*100:.1f}%
+
+### Economic Impact Calculations
+1. **Healthcare Savings from Fall Prevention**:
+   - Formula: 
+     Prevented Falls = Baseline Fall Risk × Fall Risk Reduction × Population
+     Savings = Prevented Falls × $10,000 (avg. fall cost)
+   - Example:
+     {self.baseline_metrics['fall_risk']} × {fall_reduction:.3f} × {population_size:,} = {prevented_falls:,.0f} falls prevented
+     {prevented_falls:,.0f} × $10,000 = ${fall_cost_savings:,.2f}
+
+2. **Productivity Gains**:
+   - Formula: Muscle Mass Increase × $100/person × Population
+   - Example: {self.muscle_mass_increase} × $100 × {population_size:,} = ${total_productivity_gain:,.2f}
+
+3. **Quality-Adjusted Life Years (QALYs)**:
+   - Formula: Muscle Mass Increase × 0.02 QALYs/person × Population
+   - Example: {self.muscle_mass_increase} × 0.02 × {population_size:,} = {qalys_gained:,.0f} QALYs
+
+4. **Long-Term Savings (10-Year Projection)**:
+   - Formula: (Annual Savings + Productivity Gains) × Discount Factor
+     Discount Factor = (1 - (1 + r)^-n) / r
+     Where r = 3% discount rate, n = 10 years
+   - Example:
+     (${fall_cost_savings:,.2f} + ${total_productivity_gain:,.2f}) × {((1 - (1 + 0.03)**-10) / 0.03):.2f} = ${long_term_savings:,.2f}
 
 ## Research-Backed Methodology & Citations
 
@@ -219,7 +277,7 @@ The mortality predictions in our model are based on robust statistical analyses 
         
         # Generate and save the report
         report_content = self.generate_report()
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(report_content)
         
         return filepath

@@ -20,6 +20,55 @@ Generated on: 2025-01-02
 - Productivity Gains: $20,000,000.00
 - Total Economic Benefit: $24,500,000.00
 
+## Model Calculations Explained
+
+### Metabolic Impact Calculations
+1. **Daily Calorie Burn**:
+   - Formula: Additional Calories = Muscle Mass Increase (lbs) × 8 calories/lb/day
+   - Example: 2 lbs × 8 = 16.0 calories/day
+   - Basis: Each pound of muscle burns ~6-10 calories/day at rest (midpoint = 8)
+
+2. **Annual Metabolic Impact**:
+   - Formula: Daily Calories × 365 days
+   - Example: 16.0 × 365 = 5,840 calories/year
+
+### Health Outcome Calculations
+1. **Insulin Sensitivity Improvement**:
+   - Formula: Muscle Mass Increase × 0.02 (2% improvement per lb)
+   - Example: 2 × 0.02 = 4.0%
+
+2. **Fall Risk Reduction**:
+   - Formula: min(30%, Muscle Mass Increase × 1.5%)
+   - Example: min(30%, 2 × 1.5%) = 3.0%
+
+3. **Mortality Risk Reduction**:
+   - Formula: min(20%, Muscle Mass Increase × 1%)
+   - Example: min(20%, 2 × 1%) = 2.0%
+
+### Economic Impact Calculations
+1. **Healthcare Savings from Fall Prevention**:
+   - Formula: 
+     Prevented Falls = Baseline Fall Risk × Fall Risk Reduction × Population
+     Savings = Prevented Falls × $10,000 (avg. fall cost)
+   - Example:
+     0.15 × 0.030 × 100,000 = 450 falls prevented
+     450 × $10,000 = $4,500,000.00
+
+2. **Productivity Gains**:
+   - Formula: Muscle Mass Increase × $100/person × Population
+   - Example: 2 × $100 × 100,000 = $20,000,000.00
+
+3. **Quality-Adjusted Life Years (QALYs)**:
+   - Formula: Muscle Mass Increase × 0.02 QALYs/person × Population
+   - Example: 2 × 0.02 × 100,000 = 4,000 QALYs
+
+4. **Long-Term Savings (10-Year Projection)**:
+   - Formula: (Annual Savings + Productivity Gains) × Discount Factor
+     Discount Factor = (1 - (1 + r)^-n) / r
+     Where r = 3% discount rate, n = 10 years
+   - Example:
+     ($4,500,000.00 + $20,000,000.00) × 8.53 = $208,989,969.50
+
 ## Research-Backed Methodology & Citations
 
 ### Key Findings from Clinical Research
