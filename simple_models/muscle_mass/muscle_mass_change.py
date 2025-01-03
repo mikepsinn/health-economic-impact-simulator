@@ -83,17 +83,13 @@ Generated on: {datetime.now().strftime('%Y-%m-%d')}
 ### Key Findings from Clinical Research
 1. **Mortality Risk Reduction**: Studies have consistently shown that higher muscle mass is associated with lower mortality risk. Research indicates that low muscle mass increases mortality risk, supporting the model's conservative estimates [Source: [Low muscle mass and mortality risk later in life](https://pmc.ncbi.nlm.nih.gov/articles/PMC9333286/)].
 
-2. **Metabolic Impact**: Research shows that each pound of muscle mass burns approximately 6-10 calories per day at rest. This metabolic impact is a key factor in long-term weight management and metabolic health [Source: [Wang et al., 2010](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2929494/)].
+2. **Metabolic Impact**: Research shows that each pound of muscle mass burns approximately 6-10 calories per day at rest. This metabolic impact is a key factor in long-term weight management and metabolic health [Source: [Examining Variations of Resting Metabolic Rate](https://pmc.ncbi.nlm.nih.gov/articles/PMC4535334/)].
 
-3. **Insulin Sensitivity**: Research demonstrates that relative muscle mass is inversely associated with insulin resistance and prediabetes. This relationship remains significant even after adjusting for multiple cardiovascular and metabolic risk factors [Source: [Srikanthan & Karlamangla, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4035379/)].
+3. **Insulin Sensitivity**: Studies demonstrate that increased muscle mass significantly improves insulin sensitivity, with higher relative muscle mass being inversely associated with insulin resistance [Source: [Mechanism of increased risk of insulin resistance](https://dmsjournal.biomedcentral.com/articles/10.1186/s13098-020-0523-x)].
 
-4. **Fall Risk Reduction**: Studies have shown that increased muscle mass, particularly in lower extremities, can reduce fall risk by up to 30% in older adults [Source: [Cawthon et al., 2009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2804956/)].
+4. **Fall Risk Reduction**: Randomized controlled trials demonstrate that increased muscle mass and strength can significantly reduce fall risk in older adults, with exercise interventions showing measurable improvements in fall prevention [Source: [Effects of exercise on muscle strength and fall risk](https://www.sciencedirect.com/science/article/pii/S0929664617301018)].
 
-5. **Long-term Health Impact**: Multiple studies have shown that muscle mass, independent of fat mass and other cardiovascular and metabolic risk factors, is associated with:
-   - Lower all-cause mortality in older adults
-   - Improved insulin sensitivity
-   - Better cardiovascular outcomes
-   [Source: [Clinical Significance Studies](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4035379/)]
+5. **Economic Impact**: Studies estimate substantial healthcare costs associated with falls, supporting the model's economic calculations. Fall prevention through muscle mass maintenance can lead to significant healthcare savings [Source: [The Medical Costs of Fatal Falls](https://pmc.ncbi.nlm.nih.gov/articles/PMC6089380/)].
 
 ### Model Parameters
 Our model uses conservative estimates based on the following research findings:
