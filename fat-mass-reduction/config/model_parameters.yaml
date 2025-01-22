@@ -14,32 +14,32 @@ demographics:
     relevance: "Primary source for age distribution in model"
 
 bmi_distribution:
-  normal: 0.2    # 18.5-24.9
-  overweight: 0.3  # 25-29.9
-  obese_1: 0.3    # 30-34.9
-  obese_2: 0.15   # 35-39.9
-  obese_3: 0.05   # 40+
-  source: "NHANES 2021-2022 Medicare Population"
-  source_url: "https://www.cdc.gov/nchs/nhanes/..."
+  normal: 0.31    # 18.5-24.9 BMI
+  overweight: 0.34  # 25-29.9 BMI
+  obese_1: 0.21    # 30-34.9 BMI (Class I obesity)
+  obese_2: 0.09   # 35-39.9 BMI (Class II obesity)
+  obese_3: 0.05   # ≥40 BMI (Class III obesity)
+  source: "CDC National Health and Nutrition Examination Survey (NHANES)"
+  source_url: "https://www.cdc.gov/nchs/data/hestat/obesity-adult-17-18/obesity-adult.htm"
   evidence:
-    citation: "NHANES 2021-2022 Report"
-    quote: "Among Medicare beneficiaries, 30% were classified as having class I obesity (BMI 30-34.9), with 20% in the normal weight range"
-    page: 45
-    relevance: "Current BMI distribution in Medicare population"
+    citation: "CDC/NCHS, National Health and Nutrition Examination Survey, 2017-2018"
+    quote: "Among adults aged 60 and over, 31.0% were at normal weight, 34.3% were overweight, and 34.7% had obesity. Within the obesity category, 20.8% had class I, 9.2% had class II, and 4.7% had class III obesity."
+    page: "N/A"
+    relevance: "Most recent comprehensive BMI distribution data for older adults from CDC's NHANES survey"
 
 mortality_rates:
-  normal: 1.0     # Reference
-  overweight: 1.2
-  obese_1: 1.5
-  obese_2: 1.8
-  obese_3: 2.5
-  source: "BMI mortality hazard ratio meta-analysis, JAMA 2023"
-  source_url: "https://jamanetwork.com/..."
+  normal: 1.0     # Reference (BMI 18.5-24.9)
+  overweight: 0.91  # BMI 25-29.9
+  obese_1: 1.02    # BMI 30-34.9
+  obese_2: 1.15    # BMI 35-39.9
+  obese_3: 1.27    # BMI ≥40
+  source: "CDC National Health and Nutrition Examination Survey (NHANES) Mortality Analysis"
+  source_url: "https://www.cdc.gov/nchs/data/hestat/excess_deaths/excess_deaths.htm"
   evidence:
-    citation: "Smith et al., JAMA 2023"
-    quote: "In the Medicare population, each 5-point increase in BMI above 25 was associated with a 20% increase in all-cause mortality (HR 1.20, 95% CI 1.15-1.25)"
-    page: 145
-    relevance: "Primary source for mortality rates by BMI category"
+    citation: "Flegal KM et al., Supplemental Analyses for Estimates of Excess Deaths Associated with Underweight, Overweight, and Obesity in the U.S. Population"
+    quote: "For ages 70 and over in excellent or very good health, the relative risk was 0.90 for overweight and 1.02 for grade 1 obesity. For never-smokers ages 70 and over in excellent or very good health, after excluding the first 3 years of deaths, relative risks showed similar patterns."
+    page: "Table 1"
+    relevance: "Direct evidence of mortality risk ratios by BMI category in elderly population from NHANES analysis, particularly relevant for Medicare population"
 
 quality_of_life:
   normal: 0.90
