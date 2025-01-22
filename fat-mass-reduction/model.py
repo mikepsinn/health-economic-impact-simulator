@@ -9,6 +9,7 @@ class ModelParameters:
         # Core model parameters
         self.time_horizon: int = 20  # Years
         self.discount_rate: float = 0.03
+        self.fat_mass_reduction_lbs: float = 2.0  # Primary intervention assumption
         
         # Population parameters
         self.population_size: int = 1_000_000
