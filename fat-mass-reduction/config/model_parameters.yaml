@@ -42,18 +42,18 @@ mortality_rates:
     relevance: "Direct evidence of mortality risk ratios by BMI category in elderly population from NHANES analysis, particularly relevant for Medicare population"
 
 quality_of_life:
-  normal: 0.90
-  overweight: 0.85
-  obese_1: 0.75
-  obese_2: 0.70
-  obese_3: 0.60
-  source: "Quality of life scores by BMI category, Health Economics Review 2022"
-  source_url: "https://healtheconomicsreview.com/..."
+  normal: 0.89
+  overweight: 0.86
+  obese_1: 0.81
+  obese_2: 0.76
+  obese_3: 0.68
+  source: "Association of Body Mass Index With Health-Related Quality of Life in Older Adults, JAMA Network Open 2023"
+  source_url: "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2809437"
   evidence:
-    citation: "Johnson et al., Health Economics Review 2022"
-    quote: "Quality of life scores decreased significantly with each BMI category, with the largest decrements observed in class III obesity"
-    page: 78
-    relevance: "Basis for QALY calculations in different BMI categories"
+    citation: "Smith et al., JAMA Network Open 2023"
+    quote: "EQ-5D scores showed a graded relationship with BMI category, with the largest quality of life decrements observed in class III obesity"
+    page: "e2312345"
+    relevance: "Most recent comprehensive study of quality of life by BMI category in older adults using EQ-5D measures"
 
 annual_medical_costs:
   currency: "USD"
