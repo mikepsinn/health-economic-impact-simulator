@@ -144,7 +144,7 @@ def test_sensitivity_analysis():
     }
     
     for name, model in models.items():
-        results = sensitivity.analyze_model(model.calculate_impacts)
+        results = sensitivity.analyze_model(model)  # Pass model instead of method
         
         sources = {
             "parameters": {
