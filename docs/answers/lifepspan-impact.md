@@ -12,29 +12,29 @@ Longer lifespans can lead to prolonged workforce participation, boosting economi
 
 - **Average Productivity per Worker:** Assuming each worker contributes equally, the per capita contribution is:
 
-  \[
+  $$
   \text{Per Worker Contribution} = \frac{\text{GDP}}{\text{Total Population} \times \text{Labor Force Participation Rate}}
-  \]
+  $$
 
   Given a U.S. population of about 331 million:
 
-  \[
+  $$
   \text{Per Worker Contribution} = \frac{25,000,000,000,000}{331,000,000 \times 0.61} \approx \$123,000
-  \]
+  $$
 
 - **Extended Working Years:** If individuals work an additional two years:
 
-  \[
+  $$
   \text{Additional GDP per Worker} = 2 \times \$123,000 = \$246,000
-  \]
+  $$
 
 - **Total Workforce:** Approximately 202 million individuals.
 
 - **Potential GDP Increase:** If even 10% of the workforce extends their careers by two years:
 
-  \[
+  $$
   \text{Total Increase} = 20,200,000 \times \$246,000 \approx \$4.97 \text{ trillion}
-  \]
+  $$
 
 This is a rough estimate, but it illustrates the potential for significant GDP growth through extended workforce participation.
 
@@ -58,9 +58,9 @@ Extending healthy life expectancy has immense economic value.
 
 - **For a 2.5% Increase:** This equates to an added economic value of:
 
-  \[
+  $$
   2 \times \$38 \text{ trillion} = \$76 \text{ trillion}
-  \]
+  $$
 
 This figure encompasses various factors, including increased productivity, reduced healthcare costs, and enhanced quality of life.
 
