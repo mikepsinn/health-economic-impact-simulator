@@ -1,21 +1,37 @@
-### Gene Therapy Impact Models
-1. For Follistatin therapy showing 2 lb muscle gain and 2 lb fat reduction across US population:
-   - What's the cumulative reduction in obesity-related healthcare costs?
-   - How might this impact workforce productivity metrics?
-   - What's the potential Medicare savings from reduced comorbidities?
+## Muscle Mass Impact Analysis
+1. What is the economic impact of a therapy showing 2 lb muscle gain across populations?
+   - Cumulative reduction in obesity-related healthcare costs across US population
+   - Cumulative reduction in obesity-related healthcare costs across Medicare population
+   - Impact on workforce productivity metrics
+   - Potential Medicare savings from reduced comorbidities
 
-2. For 2.5% lifespan extension:
-   - What's the estimated GDP increase from extended workforce participation?
-   - How much could Medicare save annually from delayed age-related care?
-   - What's the economic value of additional healthy years gained?
+## Fat Reduction Impact Analysis
+2. What is the economic impact of a therapy showing 2 lb fat reduction across populations?
+   - Cumulative reduction in obesity-related healthcare costs across US population
+   - Cumulative reduction in obesity-related healthcare costs across Medicare population
+   - Impact on workforce productivity metrics
+   - Potential Medicare savings from reduced comorbidities
 
-3. For Klotho therapy showing:
-   - 2-5 IQ point increase
-   - 2-year delay in Alzheimer's progression
-   - 2-year delay in kidney disease progression
-   - What's the total value of preserved cognitive function?
-   - How much could we reduce dementia care costs?
-   - What's the Medicare savings from delayed ESRD progression?
+## Lifespan Extension Impact Analysis
+3. What are the economic implications of a 2.5% lifespan extension?
+   - Estimated GDP increase from extended workforce participation
+   - Annual Medicare savings from delayed age-related care
+   - Economic value of additional healthy life years gained
+
+### IQ Enhancement Impact Analysis
+- Economic value of 2-5 IQ point increase across population
+- Productivity gains from cognitive enhancement
+   
+### Alzheimer's Progression Impact Analysis
+- Healthcare cost reduction from 2-year delay in Alzheimer's progression
+- Economic value of preserved cognitive function
+- Reduced dementia care costs
+   
+### Kidney Disease Impact Analysis
+   - Healthcare savings from 2-year delay in kidney disease progression
+   - Medicare savings from delayed ESRD progression
+   - Economic impact of improved quality of life
+
 
 ### Study Design Considerations
 4. How to structure clinical studies for direct model input:
