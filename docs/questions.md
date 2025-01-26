@@ -6,11 +6,9 @@
    - Potential Medicare savings from reduced comorbidities
 
 ## Fat Reduction Impact Analysis
-2. What is the economic impact of a therapy showing 2 lb fat reduction across populations?
-   - Cumulative reduction in obesity-related healthcare costs across US population
-   - Cumulative reduction in obesity-related healthcare costs across Medicare population
-   - Impact on workforce productivity metrics
-   - Potential Medicare savings from reduced comorbidities
+2. Create a mathematical model to estimate the health and economic impact of a therapy showing 2 lb fat reduction across:
+   - US population
+   - Medicare population
 
 ## Lifespan Extension Impact Analysis
 3. What are the economic implications of a 2.5% lifespan extension?
