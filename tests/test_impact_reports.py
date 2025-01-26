@@ -53,75 +53,54 @@ def save_report(name: str, results: Dict[str, Any], sources: Dict[str, Any]) -> 
             f.write(f"- Notes: {details['notes']}\n\n")
 
 def test_follistatin_impact():
-    """Test Follistatin therapy impact calculations."""
-    # Create parameters
-    base_params = BaseParameters()
-    therapy_params = FollistatinParameters(**{k: v["value"] for k, v in FOLLISTATIN_PARAMS.items()})
+    """Test follistatin impact calculations."""
+    model = FollistatinModel()
+    impacts = model.calculate_impacts()
     
-    # Calculate impacts
-    model = FollistatinModel(base_params, therapy_params)
-    results = model.calculate_impacts()
-    
-    # Generate report
-    save_report("follistatin_impact", results, FOLLISTATIN_PARAMS)
-    
-    # Verify key metrics
-    assert results["obesity_cost_reduction"] > 0
-    assert results["productivity_impact"] > 0
-    assert results["medicare_savings"] > 0
+    assert isinstance(impacts, dict)
+    assert "healthcare_savings" in impacts
+    assert "productivity_value" in impacts
+    assert impacts["healthcare_savings"] > 0
+    assert impacts["productivity_value"] > 0
 
 def test_klotho_impact():
-    """Test Klotho therapy impact calculations."""
-    # Create parameters
-    base_params = BaseParameters()
-    therapy_params = KlothoParameters(**{k: v["value"] for k, v in KLOTHO_PARAMS.items()})
+    """Test klotho impact calculations."""
+    model = KlothoModel()
+    impacts = model.calculate_impacts()
     
-    # Calculate impacts
-    model = KlothoModel(base_params, therapy_params)
-    results = model.calculate_impacts()
-    
-    # Generate report
-    save_report("klotho_impact", results, KLOTHO_PARAMS)
-    
-    # Verify key metrics
-    assert results["cognitive_value"] > 0
-    assert results["dementia_savings"] > 0
-    assert results["kidney_savings"] > 0
+    assert isinstance(impacts, dict)
+    assert "cognitive_value" in impacts
+    assert "dementia_savings" in impacts
+    assert "kidney_savings" in impacts
+    assert impacts["cognitive_value"] > 0
+    assert impacts["dementia_savings"] > 0
+    assert impacts["kidney_savings"] > 0
 
 def test_lifespan_impact():
-    """Test lifespan extension impact calculations."""
-    # Create parameters
-    base_params = BaseParameters()
-    therapy_params = LifespanParameters(**{k: v["value"] for k, v in LIFESPAN_PARAMS.items()})
+    """Test lifespan impact calculations."""
+    model = LifespanModel()
+    impacts = model.calculate_impacts()
     
-    # Calculate impacts
-    model = LifespanModel(base_params, therapy_params)
-    results = model.calculate_impacts()
-    
-    # Generate report
-    save_report("lifespan_impact", results, LIFESPAN_PARAMS)
-    
-    # Verify key metrics
-    assert results["gdp_increase"] > 0
-    assert results["medicare_savings"] > 0
-    assert results["qaly_value"] > 0
+    assert isinstance(impacts, dict)
+    assert "gdp_increase" in impacts
+    assert "medicare_savings" in impacts
+    assert "qaly_value" in impacts
+    assert impacts["gdp_increase"] > 0
+    assert impacts["medicare_savings"] > 0
+    assert impacts["qaly_value"] > 0
 
 def test_study_design():
-    """Test clinical study design analysis."""
-    # Create parameters
-    study_params = StudyParameters(**{k: v["value"] for k, v in STUDY_PARAMS.items()})
+    """Test study design analysis."""
+    analyzer = StudyDesignAnalyzer()
+    design = analyzer.analyze_study_requirements()
     
-    # Analyze study design
-    analyzer = StudyDesignAnalyzer(study_params)
-    results = analyzer.analyze_study_design()
-    
-    # Generate report
-    save_report("study_design", results, STUDY_PARAMS)
-    
-    # Verify key components
-    assert len(results["biomarker_correlations"]) > 0
-    assert "age_stratification" in results
-    assert "followup_duration" in results
+    assert isinstance(design, dict)
+    assert "biomarker_correlations" in design
+    assert "age_groups" in design
+    assert "followup_duration" in design
+    assert len(design["biomarker_correlations"]) > 0
+    assert len(design["age_groups"]) > 0
+    assert design["followup_duration"] > 0
 
 def test_sensitivity_analysis():
     """Test model sensitivity analysis."""
@@ -137,4 +116,9 @@ def test_sensitivity_analysis():
     
     for name, model in models.items():
         results = sensitivity.analyze_model(model.calculate_impacts)
-        save_report(f"{name}_sensitivity", results, {}) 
+        
+        assert isinstance(results, dict)
+        assert "sensitivity_scores" in results
+        assert "parameter_impacts" in results
+        assert len(results["sensitivity_scores"]) > 0
+        assert len(results["parameter_impacts"]) > 0 

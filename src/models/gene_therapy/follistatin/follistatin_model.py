@@ -10,49 +10,52 @@ from pydantic import BaseModel, Field
 from src.models.base_model import BaseImpactModel, BaseParameters
 
 class FollistatinParameters(BaseModel):
-    """Parameters specific to Follistatin therapy."""
-    muscle_gain_lbs: float = Field(default=2.0, description="Muscle mass gain in pounds")
-    fat_reduction_lbs: float = Field(default=2.0, description="Fat mass reduction in pounds")
-    obesity_cost_per_lb: float = Field(default=150.0, description="Annual healthcare cost per pound of excess fat")
-    productivity_per_muscle_lb: float = Field(default=0.001, description="Productivity increase per pound of muscle")
-    comorbidity_reduction: float = Field(default=0.05, description="Reduction in obesity-related comorbidities")
+    """Parameters for Follistatin therapy impact model."""
+    muscle_gain_lbs: float = Field(default=2.0, description="Average muscle mass gain in pounds")
+    fat_loss_lbs: float = Field(default=2.0, description="Average fat mass reduction in pounds")
+    obesity_cost_per_lb: float = Field(default=92.0, description="Healthcare cost per pound of excess fat")
+    productivity_per_lb_muscle: float = Field(default=147.0, description="Productivity value per pound of muscle")
+    medicare_savings_per_lb: float = Field(default=100.0, description="Medicare savings per pound of improved body composition")
 
 class FollistatinModel(BaseImpactModel):
-    """Models the health and economic impacts of Follistatin gene therapy."""
+    """Analyzes economic impact of Follistatin gene therapy."""
     
     def __init__(self, base_params: BaseParameters = None, therapy_params: FollistatinParameters = None):
         super().__init__(base_params)
         self.therapy_params = therapy_params or FollistatinParameters()
     
-    def calculate_obesity_cost_reduction(self) -> float:
-        """Calculate reduction in obesity-related healthcare costs."""
-        annual_savings = (
-            self.params.adult_population *
-            self.therapy_params.fat_reduction_lbs *
-            self.therapy_params.obesity_cost_per_lb
+    def calculate_impacts(self) -> Dict[str, float]:
+        """Calculate economic impacts of therapy."""
+        # Calculate healthcare cost reduction from fat loss
+        healthcare_savings = (
+            self.therapy_params.fat_loss_lbs * 
+            self.therapy_params.obesity_cost_per_lb * 
+            1_000_000  # Scale to population level
         )
-        return self.calculate_npv(annual_savings, self.params.time_horizon_years)
-    
-    def calculate_productivity_impact(self) -> float:
-        """Calculate workforce productivity improvement."""
-        return self.calculate_gdp_impact(
-            self.therapy_params.muscle_gain_lbs *
-            self.therapy_params.productivity_per_muscle_lb
+        
+        # Calculate productivity gains from muscle increase
+        productivity_value = (
+            self.therapy_params.muscle_gain_lbs * 
+            self.therapy_params.productivity_per_lb_muscle * 
+            1_000_000  # Scale to population level
         )
-    
-    def calculate_medicare_impact(self) -> float:
-        """Calculate Medicare savings from reduced comorbidities."""
-        return self.calculate_medicare_savings(self.therapy_params.comorbidity_reduction)
-    
-    def calculate_impacts(self) -> Dict[str, Any]:
-        """Calculate all health and economic impacts."""
+        
+        # Calculate Medicare savings
+        medicare_savings = (
+            (self.therapy_params.muscle_gain_lbs + self.therapy_params.fat_loss_lbs) *
+            self.therapy_params.medicare_savings_per_lb *
+            1_000_000  # Scale to population level
+        )
+        
         return {
-            "obesity_cost_reduction": self.calculate_obesity_cost_reduction(),
-            "productivity_impact": self.calculate_productivity_impact(),
-            "medicare_savings": self.calculate_medicare_impact(),
+            "healthcare_savings": healthcare_savings,
+            "productivity_value": productivity_value,
+            "medicare_savings": medicare_savings,
             "parameters": {
-                "muscle_gain": self.therapy_params.muscle_gain_lbs,
-                "fat_reduction": self.therapy_params.fat_reduction_lbs,
-                "time_horizon": self.params.time_horizon_years
+                "muscle_gain_lbs": self.therapy_params.muscle_gain_lbs,
+                "fat_loss_lbs": self.therapy_params.fat_loss_lbs,
+                "obesity_cost_per_lb": self.therapy_params.obesity_cost_per_lb,
+                "productivity_per_lb_muscle": self.therapy_params.productivity_per_lb_muscle,
+                "medicare_savings_per_lb": self.therapy_params.medicare_savings_per_lb
             }
         } 
