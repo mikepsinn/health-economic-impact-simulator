@@ -66,11 +66,21 @@ def generate_summary() -> None:
         for ref in refs_dir.glob("*.md"):
             f.write(f"- [{ref.stem}]({ref.relative_to(Path('docs'))})\n")
 
-if __name__ == "__main__":
+def main() -> None:
+    """Generate all reports."""
+    print("Generating impact reports...")
+    
+    # Create output directory
+    report_dir = Path("docs/reports/generated")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    
     # Run tests to generate individual reports
     run_tests()
     
     # Generate summary report
     generate_summary()
     
-    print("Reports generated in docs/reports/generated/") 
+    print("\nReport generation complete. See docs/reports/generated/ for results.")
+
+if __name__ == "__main__":
+    main() 

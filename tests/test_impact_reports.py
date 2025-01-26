@@ -52,21 +52,35 @@ def save_report(name: str, results: Dict[str, Any], sources: Dict[str, Any]) -> 
             f.write(f"- Source: [{details['source']}]({details['source']})\n")
             f.write(f"- Notes: {details['notes']}\n\n")
 
+def extract_param_values(params: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """Extract just the values from parameter dictionaries."""
+    return {k: v["value"] for k, v in params.items()}
+
 def test_follistatin_impact():
-    """Test follistatin impact calculations."""
-    model = FollistatinModel()
+    """Test follistatin impact calculations for 2lb muscle gain and 2lb fat reduction."""
+    base_params = BaseParameters()
+    therapy_params = FollistatinParameters(**extract_param_values(FOLLISTATIN_PARAMS))
+    model = FollistatinModel(base_params=base_params, therapy_params=therapy_params)
     impacts = model.calculate_impacts()
+    
+    save_report("follistatin_impact", impacts, FOLLISTATIN_PARAMS)
     
     assert isinstance(impacts, dict)
     assert "healthcare_savings" in impacts
     assert "productivity_value" in impacts
+    assert "medicare_savings" in impacts
     assert impacts["healthcare_savings"] > 0
     assert impacts["productivity_value"] > 0
+    assert impacts["medicare_savings"] > 0
 
 def test_klotho_impact():
-    """Test klotho impact calculations."""
-    model = KlothoModel()
+    """Test klotho impact calculations for cognitive, dementia and kidney impacts."""
+    base_params = BaseParameters()
+    therapy_params = KlothoParameters(**extract_param_values(KLOTHO_PARAMS))
+    model = KlothoModel(base_params=base_params, therapy_params=therapy_params)
     impacts = model.calculate_impacts()
+    
+    save_report("klotho_impact", impacts, KLOTHO_PARAMS)
     
     assert isinstance(impacts, dict)
     assert "cognitive_value" in impacts
@@ -77,9 +91,13 @@ def test_klotho_impact():
     assert impacts["kidney_savings"] > 0
 
 def test_lifespan_impact():
-    """Test lifespan impact calculations."""
-    model = LifespanModel()
+    """Test lifespan extension impact calculations for 2.5% increase."""
+    base_params = BaseParameters()
+    therapy_params = LifespanParameters(**extract_param_values(LIFESPAN_PARAMS))
+    model = LifespanModel(base_params=base_params, therapy_params=therapy_params)
     impacts = model.calculate_impacts()
+    
+    save_report("lifespan_impact", impacts, LIFESPAN_PARAMS)
     
     assert isinstance(impacts, dict)
     assert "gdp_increase" in impacts
@@ -90,32 +108,53 @@ def test_lifespan_impact():
     assert impacts["qaly_value"] > 0
 
 def test_study_design():
-    """Test study design analysis."""
-    analyzer = StudyDesignAnalyzer()
-    design = analyzer.analyze_study_requirements()
+    """Test study design analysis for clinical implementation."""
+    params = StudyParameters(**extract_param_values(STUDY_PARAMS))
+    analyzer = StudyDesignAnalyzer(params)
+    design = analyzer.analyze_study_design()  # Fixed method name
+    
+    save_report("study_design", design, STUDY_PARAMS)
     
     assert isinstance(design, dict)
     assert "biomarker_correlations" in design
-    assert "age_groups" in design
+    assert "age_stratification" in design
     assert "followup_duration" in design
     assert len(design["biomarker_correlations"]) > 0
-    assert len(design["age_groups"]) > 0
-    assert design["followup_duration"] > 0
+    assert "recommended_groups" in design["age_stratification"]
+    assert design["followup_duration"]["minimum_years"] > 0
 
 def test_sensitivity_analysis():
-    """Test model sensitivity analysis."""
-    # Create analyzers
+    """Test sensitivity analysis for all models."""
     sensitivity = ModelSensitivityAnalyzer()
+    base_params = BaseParameters()
     
-    # Analyze each model
     models = {
-        "follistatin": FollistatinModel(),
-        "klotho": KlothoModel(),
-        "lifespan": LifespanModel()
+        "follistatin": FollistatinModel(
+            base_params=base_params,
+            therapy_params=FollistatinParameters(**extract_param_values(FOLLISTATIN_PARAMS))
+        ),
+        "klotho": KlothoModel(
+            base_params=base_params,
+            therapy_params=KlothoParameters(**extract_param_values(KLOTHO_PARAMS))
+        ),
+        "lifespan": LifespanModel(
+            base_params=base_params,
+            therapy_params=LifespanParameters(**extract_param_values(LIFESPAN_PARAMS))
+        )
     }
     
     for name, model in models.items():
         results = sensitivity.analyze_model(model.calculate_impacts)
+        
+        sources = {
+            "parameters": {
+                "value": list(model.therapy_params.dict().keys()),
+                "source": f"docs/references/{name}.md",
+                "notes": "Key model parameters analyzed for sensitivity"
+            }
+        }
+        
+        save_report(f"{name}_sensitivity", results, sources)
         
         assert isinstance(results, dict)
         assert "sensitivity_scores" in results

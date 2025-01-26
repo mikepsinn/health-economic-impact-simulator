@@ -7,53 +7,29 @@ This module provides tools for analyzing model sensitivity and complexity:
 3. Validation frameworks
 """
 
-from typing import Dict, Any, List, Callable, Tuple
-from pydantic import BaseModel, Field
-import numpy as np
-from dataclasses import dataclass
+from typing import Dict, Any, List, Callable
 from inspect import signature
+from dataclasses import dataclass
 
 @dataclass
 class SensitivityResult:
-    """Result of sensitivity analysis for a parameter."""
+    """Result of sensitivity analysis for a single parameter."""
     parameter: str
     base_value: float
     low_value: float
     high_value: float
-    base_output: Dict[str, float]
-    low_output: Dict[str, float]
-    high_output: Dict[str, float]
+    base_output: float
+    low_output: float
+    high_output: float
     
     @property
     def sensitivity_score(self) -> float:
         """Calculate sensitivity score."""
-        # Use first numeric output as sensitivity metric
-        metric = next(k for k,v in self.base_output.items() if isinstance(v, (int, float)))
-        base = self.base_output[metric]
-        low = self.low_output[metric]
-        high = self.high_output[metric]
-        
         param_range = self.high_value - self.low_value
-        output_range = high - low
-        
-        if abs(base) < 1e-10 or abs(param_range) < 1e-10:
+        output_range = self.high_output - self.low_output
+        if param_range == 0:
             return 0
-            
-        return (output_range / base) / (param_range / self.base_value)
-
-class SensitivityParameters(BaseModel):
-    """Parameters for sensitivity analysis."""
-    parameter_ranges: Dict[str, tuple] = Field(
-        default={
-            "discount_rate": (0.01, 0.05),
-            "time_horizon_years": (5, 15),
-            "medicare_per_capita": (10000, 15000),
-            "gdp_per_capita": (55000, 75000)
-        },
-        description="Parameter ranges for sensitivity analysis"
-    )
-    simulation_runs: int = Field(default=1000, description="Number of Monte Carlo simulations")
-    confidence_level: float = Field(default=0.95, description="Confidence level for intervals")
+        return (output_range / self.base_output) / (param_range / self.base_value)
 
 class ModelSensitivityAnalyzer:
     """Analyzes model sensitivity to parameter variations."""
@@ -78,27 +54,42 @@ class ModelSensitivityAnalyzer:
             "health_quality_factor": (0.7, 0.9)
         }
         
-    def analyze_parameter_sensitivity(self, model_func: Callable) -> List[SensitivityResult]:
+    def analyze_parameter_sensitivity(self, model: Any) -> List[SensitivityResult]:
         """Analyze sensitivity to parameter variations."""
         results = []
-        base_output = model_func()  # Get baseline output
+        base_output = sum(v for k,v in model.calculate_impacts().items() if isinstance(v, (int, float)) and k != "parameters")
         
-        # Get the parameters accepted by this model
-        valid_params = signature(model_func).parameters.keys()
+        # Get parameters from model's therapy_params
+        params = model.therapy_params.dict()
         
-        for param, (min_val, max_val) in self.parameter_ranges.items():
-            # Skip parameters not used by this model
-            if param not in valid_params:
+        for param, base_val in params.items():
+            # Skip if we don't have a range for this parameter
+            if param not in self.parameter_ranges:
                 continue
-                
-            # Calculate impact of parameter variation
-            delta = max_val - min_val
-            base_val = (max_val + min_val) / 2
             
-            # Simple one-at-a-time sensitivity analysis
+            min_val, max_val = self.parameter_ranges[param]
+            
+            # Create copies of parameters for low and high values
+            low_params = params.copy()
+            low_params[param] = min_val
+            
+            high_params = params.copy()
+            high_params[param] = max_val
+            
+            # Create new parameter objects and update model
+            param_class = model.therapy_params.__class__
+            
+            # Save original params
+            original_params = model.therapy_params
+            
             try:
-                high_output = model_func(**{param: max_val})
-                low_output = model_func(**{param: min_val})
+                # Test low value
+                model.therapy_params = param_class(**low_params)
+                low_output = sum(v for k,v in model.calculate_impacts().items() if isinstance(v, (int, float)) and k != "parameters")
+                
+                # Test high value
+                model.therapy_params = param_class(**high_params)
+                high_output = sum(v for k,v in model.calculate_impacts().items() if isinstance(v, (int, float)) and k != "parameters")
                 
                 results.append(SensitivityResult(
                     parameter=param,
@@ -112,12 +103,15 @@ class ModelSensitivityAnalyzer:
             except Exception as e:
                 print(f"Warning: Could not analyze sensitivity for {param}: {str(e)}")
                 continue
+            finally:
+                # Restore original params
+                model.therapy_params = original_params
                 
         return results
-        
-    def analyze_model(self, model_func: Callable) -> Dict[str, Any]:
+    
+    def analyze_model(self, model: Any) -> Dict[str, Any]:
         """Analyze sensitivity of a model."""
-        results = self.analyze_parameter_sensitivity(model_func)
+        results = self.analyze_parameter_sensitivity(model)
         
         # Convert to dict for reporting
         return {
@@ -126,7 +120,11 @@ class ModelSensitivityAnalyzer:
             },
             "parameter_impacts": [
                 vars(r) for r in results
-            ]
+            ],
+            "parameters": {
+                "simulation_runs": 1000,  # Default value
+                "confidence_level": 0.95  # Default value
+            }
         }
     
     def assess_model_complexity(self) -> Dict[str, Any]:
@@ -169,18 +167,4 @@ class ModelSensitivityAnalyzer:
                 "Medicare officials",
                 "Industry partners"
             ]
-        }
-    
-    def analyze_model(self, model_func: Callable) -> Dict[str, Any]:
-        """Perform comprehensive model analysis."""
-        return {
-            "parameter_sensitivity": [
-                vars(r) for r in self.analyze_parameter_sensitivity(model_func)
-            ],
-            "complexity_assessment": self.assess_model_complexity(),
-            "validation_framework": self.create_validation_framework(),
-            "parameters": {
-                "simulation_runs": self.params.simulation_runs,
-                "confidence_level": self.params.confidence_level
-            }
         } 

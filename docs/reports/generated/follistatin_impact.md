@@ -1,9 +1,9 @@
 # Follistatin Impact Impact Report
 
 ## Executive Summary
-- Obesity Cost Reduction: $680.8B
-- Productivity Impact: $295.0B
-- Medicare Savings: $400.9B
+- Healthcare Savings: $300.0M
+- Productivity Value: $294.0M
+- Medicare Savings: $400.0M
 
 ## Parameters and Sources
 ### muscle_gain_lbs
