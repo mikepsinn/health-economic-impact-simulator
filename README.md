@@ -1,6 +1,56 @@
 # Health Economic Impact Simulator
 
-This project calculates the health and economic impact of therapeutic interventions, with a focus on Medicare spending implications.
+A comprehensive simulation framework for analyzing the economic impact of gene therapies and life extension technologies.
+
+## Project Structure
+
+```
+├── src/                          # Core simulation code
+│   ├── models/                   # Simulation models
+│   │   ├── gene_therapy/        # Gene-specific intervention models
+│   │   ├── economic/           # Economic impact calculations
+│   │   └── clinical/           # Clinical trial and biomarker analysis
+│   ├── analysis/                # Analysis frameworks
+│   └── utils/                   # Shared utilities
+├── config/                       # Configuration files
+├── data/                        # Data sources and preprocessing
+├── tests/                       # Test suite
+└── docs/                        # Documentation
+```
+
+## Key Features
+
+1. Gene Therapy Impact Models
+   - Follistatin therapy impact on healthcare costs and productivity
+   - Lifespan extension economic benefits
+   - Klotho therapy cognitive and health outcomes
+
+2. Economic Analysis
+   - Healthcare cost reduction modeling
+   - Workforce productivity impact
+   - Medicare savings calculations
+   - GDP impact analysis
+
+3. Clinical Study Design
+   - Biomarker correlation analysis
+   - Population stratification
+   - Outcome tracking frameworks
+
+4. Implementation Tools
+   - Sensitivity analysis
+   - Model validation
+   - Stakeholder reporting
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Copy `.env.example` to `.env` and configure
+4. Run tests: `pytest tests/`
+
+## Usage
+
+See `QUICKSTART.md` for detailed usage instructions and examples.
 
 ## How it works
 
