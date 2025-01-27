@@ -26,7 +26,7 @@ Each pound of muscle burns approximately 8 calories per day:
 
 
 
-16 lbs × 8 calories/day = 128 calories/day
+2 lbs × 8 calories/day = 16 calories/day
 
 
 #### Model Parameters
@@ -54,9 +54,9 @@ Average daily caloric burn at rest for a typical adult
 
 #### Sensitivity Analysis
 
-**Best Case:** 160.0 calories/day/person
+**Best Case:** 20.0 calories/day/person
 
-**Worst Case:** 96.0 calories/day/person
+**Worst Case:** 12.0 calories/day/person
 
 
 **Key Assumptions:**
@@ -80,7 +80,7 @@ Annual impact is calculated by multiplying daily caloric burn by 365 days:
 
 
 
-(5840 lbs × 8 calories/day) × 365 days = 17052800 calories/year
+(2 lbs × 8 calories/day) × 365 days = 5840 calories/year
 
 
 #### Model Parameters
@@ -108,9 +108,9 @@ Average daily caloric burn at rest for a typical adult
 
 #### Sensitivity Analysis
 
-**Best Case:** 21.3M calories/year/person
+**Best Case:** 7.3K calories/year/person
 
-**Worst Case:** 12.8M calories/year/person
+**Worst Case:** 4.4K calories/year/person
 
 
 **Key Assumptions:**
@@ -121,11 +121,11 @@ Average daily caloric burn at rest for a typical adult
 
 ## Health Outcomes
 
-### 📊 Insulin Sensitivity Improvement
+### 💉 Insulin Sensitivity Improvement
 
-**Value:** 4.0% per person
+**Value:** 4.0%
 
-> Improvement in insulin sensitivity per person due to increased muscle mass
+> Improvement in insulin sensitivity based on increased muscle mass
 
 *Source: [pubmed.ncbi.nlm.nih.gov](https://pubmed.ncbi.nlm.nih.gov/34054574/)*
 
@@ -136,7 +136,7 @@ Each pound of muscle mass increases insulin sensitivity by 2%:
 
 
 
-0.04 lbs × 2% = 0.1%
+2 lbs × 2% = 4.0%
 
 
 #### Model Parameters
@@ -151,35 +151,25 @@ Improvement in insulin sensitivity per pound of muscle gained, based on clinical
 
 
 
-##### 📊 Baseline Insulin Sensitivity
-
-Reference insulin sensitivity level for population
-
-**Default Value:** 1.00
-
-*Source: [www.ncbi.nlm.nih.gov](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6170977/)*
-
-
-
 
 #### Sensitivity Analysis
 
-**Best Case:** 0.1% per person
+**Best Case:** 5.0%
 
-**Worst Case:** 0.0% per person
+**Worst Case:** 3.0%
 
 
 **Key Assumptions:**
 
-- Upper bound: 3% improvement per pound
-- Lower bound: 1% improvement per pound
-- Based on clinical trial variations
+- Variation of ±25% based on clinical studies
+- Maximum improvement capped at 20%
+- Individual response variation considered
 
-### 🛡️ Fall Risk Reduction
+### 🚶 Fall Risk Reduction
 
-**Value:** 3.0% per person
+**Value:** 3.0%
 
-> Reduction in probability of falls per person due to increased muscle mass
+> Reduction in fall risk based on increased muscle mass and strength
 
 *Source: [pmc.ncbi.nlm.nih.gov](https://pmc.ncbi.nlm.nih.gov/articles/PMC8775372/)*
 
@@ -190,7 +180,7 @@ Each pound of muscle reduces fall risk by 1.5%, capped at 30% total reduction:
 
 
 
-min(30%, 0.03 lbs × 1.5%) = 0.0%
+min(30%, 2 lbs × 1.5%) = 3.0%
 
 
 #### Model Parameters
@@ -205,35 +195,25 @@ Reduction in fall risk per pound of muscle gained, supported by meta-analysis sh
 
 
 
-##### ⚠️ Annual Fall Risk
-
-Annual probability of experiencing a fall in general population
-
-**Default Value:** 15.0%
-
-*Source: [www.cdc.gov](https://www.cdc.gov/falls/data/fall-deaths.html)*
-
-
-
 
 #### Sensitivity Analysis
 
-**Best Case:** 0.1% per person
+**Best Case:** 3.8%
 
-**Worst Case:** 0.0% per person
+**Worst Case:** 2.3%
 
 
 **Key Assumptions:**
 
-- Upper cap increased to 35% for best case
-- Lower cap reduced to 25% for worst case
-- Rate variation based on study population characteristics
+- Variation of ±25% based on meta-analysis
+- Maximum reduction capped at 30%
+- Age and baseline fitness level impact considered
 
 ### ❤️ Mortality Risk Reduction
 
-**Value:** 2.0% per person
+**Value:** 2.0%
 
-> Reduction in mortality risk per person due to increased muscle mass
+> Reduction in mortality risk based on increased muscle mass
 
 *Source: [pmc.ncbi.nlm.nih.gov](https://pmc.ncbi.nlm.nih.gov/articles/PMC9209691/)*
 
@@ -244,7 +224,7 @@ Each pound of muscle reduces mortality risk by 1%, capped at 20% total reduction
 
 
 
-min(20%, 0.02 lbs × 1%) = 0.0%
+min(20%, 2 lbs × 1%) = 2.0%
 
 
 #### Model Parameters
@@ -259,36 +239,26 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 
 
-##### 📉 Annual Mortality Risk
-
-Annual mortality rate in general population
-
-**Default Value:** 2.0%
-
-*Source: [www.cdc.gov](https://www.cdc.gov/nchs/fastats/deaths.htm)*
-
-
-
 
 #### Sensitivity Analysis
 
-**Best Case:** 0.0% per person
+**Best Case:** 2.5%
 
-**Worst Case:** 0.0% per person
+**Worst Case:** 1.5%
 
 
 **Key Assumptions:**
 
-- Upper cap increased to 25% for best case
-- Lower cap reduced to 15% for worst case
-- Based on demographic and health status variations
+- Variation of ±25% based on systematic review
+- Maximum reduction capped at 20%
+- Age and comorbidity impact considered
 
 
 ## Economic Impact
 
 ### 💰 Healthcare Cost Savings
 
-**Value:** $114.6B/year total
+**Value:** $66.2B/year total
 
 > Total annual healthcare cost savings from improved health outcomes across population
 
@@ -319,31 +289,31 @@ Population Age Distribution:
 
 - Age-adjusted fall-related cost savings:
 
-$162,342,675,000 (0.0% of total savings)
+$16,234,267,500 (15.8% of total savings)
 
 - Diabetes-related cost savings (age-adjusted prevalence):
 
-$1,669,326,382,050,705,700,000 (100.0% of total savings)
+$31,429,541,880 (30.6% of total savings)
 
 - Age-adjusted hospitalization reduction:
 
-$117,505,195,602.838 (0.0% of total savings)
+$7,341,496,525 (7.1% of total savings)
 
 - Mortality-related healthcare savings:
 
-$69,965,584,926.292 (0.0% of total savings)
+$5,826,298,225 (5.7% of total savings)
 
 - General healthcare utilization reduction:
 
-$627,725,010,000 (0.0% of total savings)
+$41,848,334,000 (40.8% of total savings)
 
 
 
 
 
-**Total Healthcare Savings:** $1,669,326,383,028,244,300,000/year
+**Total Healthcare Savings:** $102,679,938,130/year
 
-*Per Person Average: $4,983,063,829,935/year*
+*Per Person Average: $307/year*
 
 
 #### Model Parameters
@@ -401,9 +371,9 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 #### Sensitivity Analysis
 
-**Best Case:** $2337056936481.7B/year total
+**Best Case:** $92.6B/year total
 
-**Worst Case:** $1001595829920.7B/year total
+**Worst Case:** $39.7B/year total
 
 
 **Key Assumptions:**
@@ -417,7 +387,7 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 ### 📈 Productivity Gains
 
-**Value:** $802.3B/year total
+**Value:** $31.1B/year total
 
 > Total annual economic gains from improved workforce productivity across population, based on cognitive performance improvements
 
@@ -430,9 +400,9 @@ Productivity gains are calculated based on cognitive performance improvements fr
 
 
 
-- Muscle mass increase: 802313529600 lbs (363922998518.32 kg)
+- Muscle mass increase: 2 lbs (0.91 kg)
 
-- Cognitive improvement coefficient: 0.32 per kg (Nature study)
+- Cognitive improvement coefficient: 0.02 per kg (Nature study)
 
 - Productivity conversion: 15% per cognitive SD
 
@@ -444,9 +414,9 @@ Productivity gains are calculated based on cognitive performance improvements fr
 
 
 
-Productivity gain: 1746830392887.951%
+Productivity gain: 0.272%
 
-Monetary impact: 1746830392887.951% × $55,000 × 335,000,000 = $321,853,499,889,605,100,000,000
+Monetary impact: $50,144,595,600
 
 
 #### Model Parameters
@@ -464,9 +434,9 @@ Estimated annual productivity gain per pound of muscle mass based on health outc
 
 #### Sensitivity Analysis
 
-**Best Case:** $535081443566468.4B/year total
+**Best Case:** $83.4B/year total
 
-**Worst Case:** $161731383694526.5B/year total
+**Worst Case:** $25.2B/year total
 
 
 **Key Assumptions:**
@@ -478,7 +448,7 @@ Estimated annual productivity gain per pound of muscle mass based on health outc
 
 ### 💎 Total Economic Benefit
 
-**Value:** $3196.3B/year total
+**Value:** $101.8B/year total
 
 > Total annual economic benefit including healthcare savings, productivity gains, and monetized QALY value across population
 
@@ -491,14 +461,14 @@ Total economic benefit includes healthcare savings, productivity gains, and mone
 
 
 
-Healthcare Savings: $46,539,734,767,998,760,000,000/year
+Healthcare Savings: $66,167,577,260/year
 
-Productivity Gains: $1,282,201,102,106,891,200,000,000/year
+Productivity Gains: $31,089,649,272/year
 
-Annual QALY Value: $3,642,616,767,349,123,000,000,000/year
-*(1,457,046,706,939,649,000,000 lifetime QALYs × $100,000/QALY ÷ 40 years)*
+Annual QALY Value: $4,558,599,600/year
+*(1,823,439.84 lifetime QALYs × $100,000/QALY ÷ 40 years)*
 
-Total: $4,971,357,604,224,012,000,000,000/year
+Total: $101,815,826,132/year
 
 
 #### Model Parameters
@@ -566,9 +536,9 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 #### Sensitivity Analysis
 
-**Best Case:** $9573113914809878.0B/year total
+**Best Case:** $4791.6B/year total
 
-**Worst Case:** $1947145763241705.0B/year total
+**Worst Case:** $862.7B/year total
 
 
 **Key Assumptions:**
@@ -580,7 +550,7 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 ### ✨ Lifetime QALYs Gained
 
-**Value:** 911.7M lifetime QALYs total
+**Value:** 1.8M lifetime QALYs total
 
 > Total lifetime quality-adjusted life years gained across population based on systematic review and meta-analysis of SMI impact on mortality
 
@@ -593,21 +563,19 @@ Lifetime QALYs are calculated based on systematic review and meta-analysis of SM
 
 
 
-- Muscle mass increase: 911719920 lbs (413548861.95 kg)
+- Muscle mass increase: 2 lbs (0.91 kg)
 
-- Mortality reduction: 7.5% per kg/m² SMI
+- Mortality reduction: 1.5% per kg muscle mass
 
 - Average remaining life expectancy: 40 years
 
-- Average body surface area: 1.7 m²
 
 
 
 
+Lifetime QALYs per person = 0.91 kg × (1.5% × 40 years) = 0.01 QALYs
 
-Lifetime QALYs per person = 413548861.95 kg × (7.5% × 40 years) = 1240646585.86 QALYs
-
-Total lifetime QALYs = 1240646585.86 × 335,000,000 people = 415,616,606,262,403,200 QALYs
+Total lifetime QALYs = 0.01 × 335,000,000 people = 1,823,439.84 QALYs
 
 
 *Note: These are lifetime QALYs gained, not annual QALYs. The calculation represents the total quality-adjusted life years gained over the remaining life expectancy.*
@@ -638,14 +606,14 @@ Annual probability of death in the target population, significantly influenced b
 
 #### Sensitivity Analysis
 
-**Best Case:** 561082418.5B lifetime QALYs total
+**Best Case:** 1.2B lifetime QALYs total
 
-**Worst Case:** 290931624.4B lifetime QALYs total
+**Worst Case:** 638.2M lifetime QALYs total
 
 
 **Key Assumptions:**
 
-- Mortality risk reduction range: 6-9% per kg/m² SMI
+- Mortality risk reduction range: 6-9% per kg muscle mass
 - Remaining life expectancy range: 35-45 years
 - Linear relationship between muscle mass and mortality risk
 - Each year of life gained equals 1 QALY
@@ -653,7 +621,7 @@ Annual probability of death in the target population, significantly influenced b
 
 ### 🏥 Medicare Spend Impact
 
-**Value:** $46.8B/year total
+**Value:** $10.3B/year total
 
 > Total annual impact on Medicare spending from improved health outcomes across Medicare-eligible population
 
@@ -692,19 +660,19 @@ Age Distribution:
 
 - Age-adjusted mortality reduction impact:
 
-$232,949,000,000 (28.10% of total spend)
+$23,294,900,000 (2.81% of total spend)
 
 - Age-adjusted fall-related cost savings:
 
-$41,053,332,937.5 (4.95% of total spend)
+$4,105,333,293.75 (0.50% of total spend)
 
 - Diabetes-related cost savings (33% prevalence):
 
-$373,499,783,752,939,860,000 (45054256182.50% of total spend)
+$15,947,297,388 (1.92% of total spend)
 
 - Age-adjusted hospitalization reduction:
 
-$52,413,525,000 (6.32% of total spend)
+$3,494,235,000 (0.42% of total spend)
 
 
 
@@ -714,14 +682,14 @@ $52,413,525,000 (6.32% of total spend)
 
 
 
-- Total Savings: $373,499,784,079,355,740,000/year
+- Total Savings: $46,841,765,681.75/year
 
-*(45054256221.88% of total Medicare spend)*
+*(5.65% of total Medicare spend)*
 
 
-- Per Beneficiary Savings: $5,994,218,970,941/year
+- Per Beneficiary Savings: $752/year
 
-*(45054256221.88% reduction in per-person spend)*
+*(5.65% reduction in per-person spend)*
 
 
 #### Model Parameters
@@ -789,9 +757,9 @@ Improvement in insulin sensitivity per pound of muscle gained, based on clinical
 
 #### Sensitivity Analysis
 
-**Best Case:** $522899697711.1B/year total
+**Best Case:** $14.5B/year total
 
-**Worst Case:** $224099870447.6B/year total
+**Worst Case:** $6.2B/year total
 
 
 **Key Assumptions:**
@@ -805,7 +773,7 @@ Improvement in insulin sensitivity per pound of muscle gained, based on clinical
 
 ### 🎯 Long-Term Savings
 
-**Value:** $7821.9B total
+**Value:** $829.6B total
 
 > Total projected 10-year savings with discounted future value across population
 
@@ -818,9 +786,9 @@ Improvement in insulin sensitivity per pound of muscle gained, based on clinical
 
 
 
-- Annual healthcare savings: $113,891,539,594,769,560,000,000
+- Annual healthcare savings: $66,167,577,260
 
-- Annual productivity gains: $3,137,788,780,257,771,000,000,000
+- Annual productivity gains: $31,089,649,272
 
 - Discount rate: 3%
 
@@ -830,7 +798,7 @@ Improvement in insulin sensitivity per pound of muscle gained, based on clinical
 
 
 
-($113,891,539,594,769,560,000,000 + $3,137,788,780,257,771,000,000,000) × Present Value Factor = $27,737,492,688,694,300,000,000,000
+($66,167,577,260 + $31,089,649,272) × Present Value Factor = $829,623,869,660.216
 
 
 #### Model Parameters
@@ -898,9 +866,9 @@ Reduction in mortality risk per pound of muscle gained, with maximum reduction o
 
 #### Sensitivity Analysis
 
-**Best Case:** $38832489764172024.0B total
+**Best Case:** $1161.5B total
 
-**Worst Case:** $16642495613216580.0B total
+**Worst Case:** $497.8B total
 
 
 **Key Assumptions:**
@@ -947,4 +915,4 @@ Adjustment for multiple covariates including:
 
 
 ---
-*Report generated on 2025-01-26T03:51:28.228Z*
+*Report generated on 2025-01-27T09:26:45.042Z*
