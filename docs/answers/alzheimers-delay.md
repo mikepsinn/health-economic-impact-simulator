@@ -76,15 +76,15 @@ $6.7\, \text{million} \times 10\% = 670,000\, \text{patients}$
 
 ##### **Step 2: Cost Savings**  
 - **Annual savings per patient (2-year delay):**  
-$\text{Formal care savings} = 2 \times \$34,249 = \$68,498$
+$\text{Formal care savings} = 2 × \text{\$34,249} = \text{\$68,498}$
 
-$\text{Informal care savings (replacement)} = 2 \times \$7,882 = \$15,764$
+$\text{Informal care savings (replacement)} = 2 × \text{\$7,882} = \text{\$15,764}$
 
 - **Total annual savings (US population):**  
-$670,000 \times (\$68,498 + \$15,764) = \$56.5\, \text{billion}$
+$670,000 × (\text{\$68,498} + \text{\$15,764}) = \text{\$56.5 billion}$
 
 - **Medicare-specific savings (91% of total):**  
-$\$56.5\, \text{billion} \times 91\% = \$51.4\, \text{billion}$
+$\text{\$56.5 billion} × 91\% = \text{\$51.4 billion}$
 
 ##### **Step 3: Health Benefits (QALYs)**  
 - **QALYs gained per patient (2-year delay):**  
@@ -96,10 +96,10 @@ $670,000 \times 0.32 \times 10\, \text{years} = 2.14\, \text{million QALYs}$
 ##### **Step 4: Long-Term Projections (2025–2060)**  
 Using the [Alzheimer's Association's 2050 prevalence estimate](https://www.alzheimers.net/alzheimers-statistics) of 13.8 million cases:  
 - **Cumulative savings (2025–2060):**  
-$\$56.5\, \text{billion/year} \times 35\, \text{years} = \$1.98\, \text{trillion}$
+$\text{\$56.5 billion/year} × 35\text{ years} = \text{\$1.98 trillion}$
 
 - **Medicare savings:**  
-$\$51.4\, \text{billion/year} \times 35\, \text{years} = \$1.8\, \text{trillion}$
+$\text{\$51.4 billion/year} × 35\text{ years} = \text{\$1.8 trillion}$
 
 ---
 
