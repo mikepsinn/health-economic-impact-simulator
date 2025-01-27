@@ -68,51 +68,38 @@ The model calculates **cumulative savings** and **QALY gains** over a 10-year pe
 
 ##### **Step 1: Prevalence Adjustment**  
 A 2-year delay reduces the number of patients progressing to severe stages annually. Assuming a linear relationship between delay and prevalence reduction [source](https://link.springer.com/article/10.1007/s40120-022-00393-1):  
-$$
-\text{Prevalence Reduction} = \frac{2}{5} \times 25\% = 10\% \quad \text{(extrapolated from a 5-year delay reducing prevalence by 25%)}
-$$  
+
+$\text{Prevalence Reduction} = \frac{2}{5} \times 25\% = 10\%$ (extrapolated from a 5-year delay reducing prevalence by 25%)
+
 - **Annual avoided cases (2025):**  
-$$
-6.7\, \text{million} \times 10\% = 670,000\, \text{patients}
-$$  
+$6.7\, \text{million} \times 10\% = 670,000\, \text{patients}$
 
 ##### **Step 2: Cost Savings**  
 - **Annual savings per patient (2-year delay):**  
-$$
-\text{Formal care savings} = 2 \times \$34,249 = \$68,498 \quad \text{}
-$$
-$$
-\text{Informal care savings (replacement)} = 2 \times \$7,882 = \$15,764 \quad \text{}
-$$  
+$\text{Formal care savings} = 2 \times \$34,249 = \$68,498$
+
+$\text{Informal care savings (replacement)} = 2 \times \$7,882 = \$15,764$
+
 - **Total annual savings (US population):**  
-$$
-670,000 \times (\$68,498 + \$15,764) = \$56.5\, \text{billion}
-$$  
+$670,000 \times (\$68,498 + \$15,764) = \$56.5\, \text{billion}$
+
 - **Medicare-specific savings (91% of total):**  
-$$
-\$56.5\, \text{billion} \times 91\% = \$51.4\, \text{billion}
-$$  
+$\$56.5\, \text{billion} \times 91\% = \$51.4\, \text{billion}$
 
 ##### **Step 3: Health Benefits (QALYs)**  
 - **QALYs gained per patient (2-year delay):**  
-$$
-0.16 \times 2 = 0.32\, \text{QALYs}
-$$  
+$0.16 \times 2 = 0.32\, \text{QALYs}$
+
 - **Total QALYs gained (2025–2035):**  
-$$
-670,000 \times 0.32 \times 10\, \text{years} = 2.14\, \text{million QALYs}
-$$  
+$670,000 \times 0.32 \times 10\, \text{years} = 2.14\, \text{million QALYs}$
 
 ##### **Step 4: Long-Term Projections (2025–2060)**  
 Using the [Alzheimer's Association's 2050 prevalence estimate](https://www.alzheimers.net/alzheimers-statistics) of 13.8 million cases:  
 - **Cumulative savings (2025–2060):**  
-$$
-\$56.5\, \text{billion/year} \times 35\, \text{years} = \$1.98\, \text{trillion}
-$$  
+$\$56.5\, \text{billion/year} \times 35\, \text{years} = \$1.98\, \text{trillion}$
+
 - **Medicare savings:**  
-$$
-\$51.4\, \text{billion/year} \times 35\, \text{years} = \$1.8\, \text{trillion}
-$$  
+$\$51.4\, \text{billion/year} \times 35\, \text{years} = \$1.8\, \text{trillion}$
 
 ---
 
